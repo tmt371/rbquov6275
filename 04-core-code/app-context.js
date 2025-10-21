@@ -67,6 +67,7 @@ export class AppContext {
      * @param {function} factory - A function that creates the dependency.
      */
     register(name, factory) {
+        // The factory function receives 'this' (the context) to resolve other dependencies.
         this.dependencies[name] = factory(this);
     }
 
@@ -76,11 +77,19 @@ export class AppContext {
      * @returns {*} The resolved dependency.
      */
     get(name) {
-        if (!this.dependencies[name]) {
+        const dependency = this.dependencies[name];
+        if (!dependency) {
+            // Check if it's a factory function that hasn't been instantiated yet
+            const factory = this.dependencies[name];
+            if (typeof factory === 'function') {
+                this.dependencies[name] = factory(this);
+                return this.dependencies[name];
+            }
             throw new Error(`Dependency not found: ${name}`);
         }
-        return this.dependencies[name];
+        return dependency;
     }
+
 
     /**
      * Initializes the ConfigManager which is required by many other services.
@@ -116,7 +125,7 @@ export class AppContext {
             dualChainView: ctx.get('dualChainView'),
             driveAccessoriesView: ctx.get('driveAccessoriesView'),
         }));
-        
+
         this.register('workflowService', (ctx) => new WorkflowService({
             eventAggregator: ctx.get('eventAggregator'),
             stateService: ctx.get('stateService'),
@@ -126,7 +135,7 @@ export class AppContext {
             detailConfigView: ctx.get('detailConfigView'),
             configManager: ctx.get('configManager'), // [FIX] Pass configManager dependency
         }));
-        
+
         this.register('appController', (ctx) => new AppController(ctx));
     }
 
@@ -156,7 +165,7 @@ export class AppContext {
             f3QuotePrepView: this.get('f3QuotePrepView'),
             f4ActionsView: this.get('f4ActionsView'),
         });
-        
+
         // Pass view instances to LeftPanelComponent
         this.get('leftPanelComponent').setViews({
             detailConfigView: this.get('detailConfigView')
@@ -172,7 +181,7 @@ export class AppContext {
         this.register('summaryComponent', (ctx) => new SummaryComponent({ stateService: ctx.get('stateService') }));
         this.register('notificationComponent', () => new NotificationComponent());
         this.register('dialogComponent', (ctx) => new DialogComponent({ eventAggregator: ctx.get('eventAggregator') }));
-        
+
         this.register('leftPanelInputHandler', (ctx) => new LeftPanelInputHandler({
             eventAggregator: ctx.get('eventAggregator'),
             stateService: ctx.get('stateService'),
