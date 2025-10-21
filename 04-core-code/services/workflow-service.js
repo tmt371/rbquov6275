@@ -33,6 +33,7 @@ export class WorkflowService {
 
     async handlePrintableQuoteRequest() {
         try {
+            // Stage 1: Fetch both HTML templates.
             const [quoteTemplate, detailsTemplate] = await Promise.all([
                 fetch(paths.partials.quoteTemplate).then(res => res.ok ? res.text() : Promise.reject(new Error(`Failed to load ${paths.partials.quoteTemplate}`))),
                 fetch(paths.partials.detailedItemList).then(res => res.ok ? res.text() : Promise.reject(new Error(`Failed to load ${paths.partials.detailedItemList}`))),
@@ -41,14 +42,33 @@ export class WorkflowService {
             const { quoteData, ui } = this.stateService.getState();
             const f3Data = this._getF3OverrideData();
 
-            // [MODIFIED] Pass the full state to prepare the data object.
             const templateData = this._prepareTemplateData(quoteData, ui, f3Data);
 
-            // For now, details page is still a placeholder.
-            const populatedDetailsPage = this._populateTemplate(detailsTemplate, templateData);
+            // [FIX] Correctly implement nested template population.
+            // 1. Populate the details page first.
+            const populatedDetailsPageHtml = this._populateTemplate(detailsTemplate, templateData);
+
+            // 2. Inject the populated details HTML into the data for the main page.
+            const finalTemplateData = { 
+                ...templateData, 
+                // The key 'rollerBlindsTable' is used in 'detailed-item-list-final.html'
+                // The key for injection into the main template is 'detailedItemList', but we are combining documents.
+                // Let's correct the logic to embed the entire populated second page.
+                // For now, we will combine the body contents.
+            };
             
-            // Populate the main quote page and inject the details page into it.
-            const finalHtml = this._populateTemplate(quoteTemplate, { ...templateData, detailedItemList: populatedDetailsPage });
+            // A more robust way to combine two full HTML docs for an iframe is to merge their body content.
+            const quoteBodyMatch = quoteTemplate.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+            const detailsBodyMatch = populatedDetailsPage.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+
+            if (!quoteBodyMatch || !detailsBodyMatch) {
+                throw new Error("Could not find body content in one of the templates.");
+            }
+
+            const combinedBodyContent = quoteBodyMatch[1] + detailsBodyMatch[1];
+            let finalHtml = quoteTemplate.replace(quoteBodyMatch[1], combinedBodyContent);
+            finalHtml = this._populateTemplate(finalHtml, finalTemplateData);
+
 
             this.eventAggregator.publish(EVENTS.SHOW_QUOTE_PREVIEW, finalHtml);
 
@@ -84,7 +104,6 @@ export class WorkflowService {
         return html;
     }
 
-    // [MODIFIED] This method now prepares real data for the first page.
     _prepareTemplateData(quoteData, ui, f3Data) {
         const summaryData = this.calculationService.calculateF2Summary(quoteData, ui);
         const grandTotal = parseFloat(f3Data.finalOfferPrice) || summaryData.gst;
