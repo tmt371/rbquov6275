@@ -32200,6 +32200,7 @@ text eol=lf
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ez Blinds Quotee v0.3 - Spreadsheet Mode</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="data:,">
 </head>
 
 <body>
@@ -35346,7 +35347,7 @@ import { initialState } from '../config/initial-state.js';
 import { EVENTS, DOM_IDS } from '../config/constants.js';
 import * as uiActions from '../actions/ui-actions.js';
 import * as quoteActions from '../actions/quote-actions.js';
-import { paths } from '../config/paths.js'; // [NEW] Import paths
+import { paths } from '../config/paths.js';
 
 /**
  * @fileoverview A dedicated service for coordinating complex, multi-step user workflows.
@@ -35369,31 +35370,39 @@ export class WorkflowService {
         console.log("WorkflowService Initialized.");
     }
 
-    // [NEW] Setter for the QuotePreviewComponent dependency
     setQuotePreviewComponent(component) {
         this.quotePreviewComponent = component;
     }
 
     async handlePrintableQuoteRequest() {
         try {
-            // 1. Fetch templates
             const [quoteTemplate, detailsTemplate] = await Promise.all([
-                fetch(paths.partials.quoteTemplate).then(res => res.text()),
-                fetch(paths.partials.detailedItemList).then(res => res.text()),
+                fetch(paths.partials.quoteTemplate).then(res => res.ok ? res.text() : Promise.reject(new Error(`Failed to load ${paths.partials.quoteTemplate}`))),
+                fetch(paths.partials.detailedItemList).then(res => res.ok ? res.text() : Promise.reject(new Error(`Failed to load ${paths.partials.detailedItemList}`))),
             ]);
 
-            // 2. Get current state and F3 override data
             const { quoteData, ui } = this.stateService.getState();
             const f3Data = this._getF3OverrideData();
 
-            // 3. Prepare data for templates
             const templateData = this._prepareTemplateData(quoteData, ui, f3Data);
 
-            // 4. Populate templates
-            const populatedDetails = this._populateTemplate(detailsTemplate, templateData);
-            const finalHtml = this._populateTemplate(quoteTemplate, { ...templateData, detailedItemList: populatedDetails });
+            const populatedDetailsPageHtml = this._populateTemplate(detailsTemplate, templateData);
 
-            // 5. Show preview
+            const styleMatch = populatedDetailsPageHtml.match(/<style>([\s\S]*)<\/style>/i);
+            const detailsBodyMatch = populatedDetailsPageHtml.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+
+            if (!detailsBodyMatch) {
+                throw new Error("Could not find body content in the details template.");
+            }
+
+            const detailsStyleContent = styleMatch ? styleMatch[0] : '';
+            const detailsBodyContent = detailsBodyMatch[1];
+            
+            let finalHtml = quoteTemplate.replace('</head>', `${detailsStyleContent}</head>`);
+            finalHtml = finalHtml.replace('</body>', `${detailsBodyContent}</body>`);
+
+            finalHtml = this._populateTemplate(finalHtml, templateData);
+
             this.eventAggregator.publish(EVENTS.SHOW_QUOTE_PREVIEW, finalHtml);
 
         } catch (error) {
@@ -35416,32 +35425,7 @@ export class WorkflowService {
             customerPhone: getValue('f3-customer-phone'),
             customerEmail: getValue('f3-customer-email'),
             finalOfferPrice: getValue('f3-final-offer-price'),
-            generalNotes: getValue('f3-general-notes'),
             termsConditions: getValue('f3-terms-conditions'),
-        };
-    }
-
-    _prepareTemplateData(quoteData, ui, f3Data) {
-        // This will be expanded significantly to gather all necessary data points
-        // For now, it's a placeholder for the main data structure.
-        const summaryData = this.calculationService.calculateF2Summary(quoteData, ui);
-
-        return {
-            quoteId: f3Data.quoteId,
-            issueDate: f3Data.issueDate,
-            dueDate: f3Data.dueDate,
-            customerInfoHtml: this._formatCustomerInfo(f3Data),
-            itemsTableBody: '<tr><td colspan="5">Item details will be populated here.</td></tr>', // Placeholder
-            rollerBlindsTable: '<table><tr><td>Detailed roller blind list will be here.</td></tr></table>', // Placeholder
-            subtotal: `$${summaryData.sumPrice.toFixed(2)}`, // Example
-            deliveryFee: `$${summaryData.deliveryFee.toFixed(2)}`,
-            installationFee: `$${summaryData.installFee.toFixed(2)}`,
-            gst: `$${(summaryData.sumPrice * 0.1).toFixed(2)}`,
-            grandTotal: `$${(summaryData.sumPrice * 1.1).toFixed(2)}`,
-            deposit: `$${(summaryData.sumPrice * 1.1 * 0.5).toFixed(2)}`,
-            balance: `$${(summaryData.sumPrice * 1.1 * 0.5).toFixed(2)}`,
-            savings: `$${(summaryData.firstRbPrice - summaryData.disRbPrice).toFixed(2)}`,
-            termsAndConditions: f3Data.termsConditions.replace(/\n/g, '<br>')
         };
     }
 
@@ -35452,9 +35436,100 @@ export class WorkflowService {
         if (f3Data.customerEmail) html += `Email: ${f3Data.customerEmail}`;
         return html;
     }
+    
+    // [NEW] Helper method to generate the detailed items table for the appendix.
+    _generateItemsTableHtml(items) {
+        const headers = ['#', 'Location', 'W&nbsp;x&nbsp;H', 'Type', 'F-Name', 'F-Color', 'Options'];
+        
+        const rows = items
+            .filter(item => item.width && item.height) // Only include rows with dimensions
+            .map((item, index) => {
+                const options = [
+                    item.over, item.oi, item.lr,
+                    item.dual ? "D'Bracket" : '',
+                    item.chain ? `${item.chain}mm` : '',
+                    item.winder ? 'H-Winder' : '',
+                    item.motor || ''
+                ].filter(Boolean).join(', ');
+
+                return `
+                    <tr>
+                        <td class="text-center">${index + 1}</td>
+                        <td>${item.location || ''}</td>
+                        <td>${item.width} x ${item.height}</td>
+                        <td>${item.fabricType || ''}</td>
+                        <td>${item.fabric || ''}</td>
+                        <td>${item.color || ''}</td>
+                        <td>${options}</td>
+                    </tr>
+                `;
+            })
+            .join('');
+
+        return `
+            <table class="items-table">
+                <thead>
+                    <tr class="table-title">
+                        <th colspan="${headers.length}">Roller Blinds - Detailed List</th>
+                    </tr>
+                    <tr>
+                        ${headers.map(h => `<th>${h}</th>`).join('')}
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rows}
+                </tbody>
+            </table>
+        `;
+    }
+
+
+    _prepareTemplateData(quoteData, ui, f3Data) {
+        const summaryData = this.calculationService.calculateF2Summary(quoteData, ui);
+        const grandTotal = parseFloat(f3Data.finalOfferPrice) || summaryData.gst;
+        const items = quoteData.products.rollerBlind.items;
+
+        return {
+            // Real Data from F3 and calculations
+            quoteId: f3Data.quoteId,
+            issueDate: f3Data.issueDate,
+            dueDate: f3Data.dueDate,
+            customerInfoHtml: this._formatCustomerInfo(f3Data),
+            termsAndConditions: (f3Data.termsConditions || 'Standard terms and conditions apply.').replace(/\n/g, '<br>'),
+
+            subtotal: `$${summaryData.sumPrice.toFixed(2)}`,
+            deliveryFee: `$${summaryData.deliveryFee.toFixed(2)}`,
+            installationFee: `$${summaryData.installFee.toFixed(2)}`,
+            gst: `$${(grandTotal / 1.1 * 0.1).toFixed(2)}`,
+            grandTotal: `$${grandTotal.toFixed(2)}`,
+            deposit: `$${(grandTotal * 0.5).toFixed(2)}`,
+            balance: `$${(grandTotal * 0.5).toFixed(2)}`,
+            savings: `$${(summaryData.firstRbPrice - summaryData.disRbPrice).toFixed(2)}`,
+
+            // Real data for the main items table (first page)
+            itemsTableBody: `
+                <tr>
+                    <td data-label="#">1</td>
+                    <td data-label="Description">
+                        <div class="description">Roller Blinds Package</div>
+                        <div class="details">See appendix for detailed specifications.</div>
+                    </td>
+                    <td data-label="QTY" class="align-right">${items.filter(i => i.width && i.height).length}</td>
+                    <td data-label="Price" class="align-right">
+                        <span class="original-price">$${summaryData.firstRbPrice.toFixed(2)}</span>
+                    </td>
+                    <td data-label="Discounted Price" class="align-right">
+                        <span class="discounted-price">$${summaryData.disRbPrice.toFixed(2)}</span>
+                    </td>
+                </tr>`,
+
+            // [MODIFIED] Real data for the appendix table (second page)
+            rollerBlindsTable: this._generateItemsTableHtml(items),
+        };
+    }
 
     _populateTemplate(template, data) {
-        return template.replace(/\{\{\{?(\w+)}}}?/g, (match, key) => {
+        return template.replace(/\{\{\{?([\w\-]+)\}\}\}?/g, (match, key) => {
             return data.hasOwnProperty(key) ? data[key] : match;
         });
     }
@@ -35721,7 +35796,6 @@ export class WorkflowService {
     _calculateF2Summary() {
         const { quoteData, ui } = this.stateService.getState();
         const summaryValues = this.calculationService.calculateF2Summary(quoteData, ui);
-
         for (const key in summaryValues) {
             this.stateService.dispatch(uiActions.setF2Value(key, summaryValues[key]));
         }
@@ -36207,7 +36281,8 @@ export class InputHandler {
             if (event.key >= '0' && event.key <= '9') {
                 keyToPublish = event.key;
             } 
-            else {
+            // [FIX] Add a check to ensure event.key is not null or undefined before calling .toLowerCase()
+            else if (event.key) {
                 switch (event.key.toLowerCase()) {
                     case 'w': keyToPublish = 'W'; break;
                     case 'h': keyToPublish = 'H'; break;
@@ -39366,15 +39441,15 @@ export class UIManager {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quotation - {{quoteId}}</title>
     <style>
-        /* --- ?öÁî®Ê®???áË???--- */
+        /* --- ?öÁî®Ê®?? --- */
         :root {
             --primary-color: #1a237e;
             /* Ê∑±Ë???*/
             --border-color: #e0e0e0;
-            /* ?äÊ?È°èËâ≤ */
+            /* Ê∑∫ÁÅ∞?äÊ? */
             --text-color: #333;
             --success-color: #2e7d32;
-            /* Á∂†Ëâ≤ÔºåÁî®?ºÁ??ÅÈ?È°?*/
+            /* Á∂†Ëâ≤ÔºåÁî®?ºÁ??ÅÊ?Á§?*/
             --icon-color: #888888;
         }
 
@@ -39409,7 +39484,7 @@ export class UIManager {
             margin-bottom: 30px;
         }
 
-        /* ?¨Âè∏Ë≥áË??ÄÂ°?*/
+        /* ?¨Âè∏Ë≥áË? */
         .company-details {
             text-align: right;
         }
@@ -39429,7 +39504,7 @@ export class UIManager {
             justify-content: flex-end;
         }
 
-        /* ?±ÂÉπ?ÆË?Ë®äÂ?Â°?*/
+        /* ?±ÂÉπ?ÆË?Ë®?*/
         .quotation-meta {
             text-align: left;
         }
@@ -39477,7 +39552,7 @@ export class UIManager {
             line-height: 1.6;
         }
 
-        /* --- ?¢Â??ÖÁõÆË°®Ê†º --- */
+        /* --- ?ÖÁõÆË°®Ê†º --- */
         .items-table {
             width: 100%;
             border-collapse: collapse;
@@ -39528,7 +39603,7 @@ export class UIManager {
             color: #d32f2f;
         }
 
-        /* --- Á∏ΩË? --- */
+        /* --- Á∏ΩÁ? --- */
         .summary-section {
             display: flex;
             justify-content: flex-end;
@@ -39753,7 +39828,7 @@ export class UIManager {
                     <p>
                         <span>0466 965 168<span class="icon">??</span></span>
                         <span style="margin: 0 10px;">|</span>
-                        <span>ezblinds@ezbns.com.au<span class="icon">?ìß</span></span>
+                        <span>ezblinds@ezbns.com.au<span class="icon">?âÔ?</span></span>
                     </p>
                     <p>www.ezbns.com.au<span class="icon">??</span></p>
                 </div>
