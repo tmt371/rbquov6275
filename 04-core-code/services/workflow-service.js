@@ -18,6 +18,7 @@ export class WorkflowService {
         calculationService,
         productFactory,
         detailConfigView,
+        configManager, // [FIX] Added missing dependency
     }) {
         this.eventAggregator = eventAggregator;
         this.stateService = stateService;
@@ -25,6 +26,7 @@ export class WorkflowService {
         this.calculationService = calculationService;
         this.productFactory = productFactory;
         this.detailConfigView = detailConfigView;
+        this.configManager = configManager; // [FIX] Store the dependency
         this.quotePreviewComponent = null; // Will be set by AppContext
 
         this.f2InputSequence = [
