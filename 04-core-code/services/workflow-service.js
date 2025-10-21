@@ -27,34 +27,29 @@ export class WorkflowService {
         console.log("WorkflowService Initialized.");
     }
 
-    // [MODIFIED] All quote generation logic is now consolidated here.
     setQuotePreviewComponent(component) {
         this.quotePreviewComponent = component;
     }
 
     async handlePrintableQuoteRequest() {
         try {
-            // Stage 1: Fetch both HTML templates.
             const [quoteTemplate, detailsTemplate] = await Promise.all([
                 fetch(paths.partials.quoteTemplate).then(res => res.ok ? res.text() : Promise.reject(new Error(`Failed to load ${paths.partials.quoteTemplate}`))),
                 fetch(paths.partials.detailedItemList).then(res => res.ok ? res.text() : Promise.reject(new Error(`Failed to load ${paths.partials.detailedItemList}`))),
             ]);
 
-            // Stage 1: Get data from F3 panel.
+            const { quoteData, ui } = this.stateService.getState();
             const f3Data = this._getF3OverrideData();
 
-            // Stage 1: Prepare data object with placeholders and a few real values.
-            const templateData = this._prepareTemplateData(f3Data);
+            // [MODIFIED] Pass the full state to prepare the data object.
+            const templateData = this._prepareTemplateData(quoteData, ui, f3Data);
 
-            // Stage 1: Populate both templates with the data.
-            const populatedQuotePage = this._populateTemplate(quoteTemplate, templateData);
+            // For now, details page is still a placeholder.
             const populatedDetailsPage = this._populateTemplate(detailsTemplate, templateData);
+            
+            // Populate the main quote page and inject the details page into it.
+            const finalHtml = this._populateTemplate(quoteTemplate, { ...templateData, detailedItemList: populatedDetailsPage });
 
-            // Stage 1: Combine the two populated HTML documents into a single string for the iframe.
-            // Browsers are lenient and will render this sequentially.
-            const finalHtml = populatedQuotePage + populatedDetailsPage;
-
-            // Publish the final combined HTML to be displayed.
             this.eventAggregator.publish(EVENTS.SHOW_QUOTE_PREVIEW, finalHtml);
 
         } catch (error) {
@@ -76,51 +71,65 @@ export class WorkflowService {
             customerAddress: getValue('f3-customer-address'),
             customerPhone: getValue('f3-customer-phone'),
             customerEmail: getValue('f3-customer-email'),
+            finalOfferPrice: getValue('f3-final-offer-price'),
             termsConditions: getValue('f3-terms-conditions'),
         };
     }
-    
+
     _formatCustomerInfo(f3Data) {
-        // Use placeholders for Stage 1 if data is not available
-        let html = `<strong>${f3Data.customerName || '[Customer Name]'}</strong><br>`;
-        if (f3Data.customerAddress) {
-            html += `${f3Data.customerAddress.replace(/\n/g, '<br>')}<br>`;
-        } else {
-            html += '[Customer Address]<br>';
-        }
+        let html = `<strong>${f3Data.customerName || ''}</strong><br>`;
+        if (f3Data.customerAddress) html += `${f3Data.customerAddress.replace(/\n/g, '<br>')}<br>`;
         if (f3Data.customerPhone) html += `Phone: ${f3Data.customerPhone}<br>`;
         if (f3Data.customerEmail) html += `Email: ${f3Data.customerEmail}`;
         return html;
     }
-    
-    _prepareTemplateData(f3Data) {
-        // Stage 1: This method returns a mix of real data from F3 and static placeholders.
+
+    // [MODIFIED] This method now prepares real data for the first page.
+    _prepareTemplateData(quoteData, ui, f3Data) {
+        const summaryData = this.calculationService.calculateF2Summary(quoteData, ui);
+        const grandTotal = parseFloat(f3Data.finalOfferPrice) || summaryData.gst;
+
         return {
-            // Real Data
-            quoteId: f3Data.quoteId || '[Quote ID]',
-            issueDate: f3Data.issueDate || '[Issue Date]',
-            dueDate: f3Data.dueDate || '[Due Date]',
+            // Real Data from F3 and calculations
+            quoteId: f3Data.quoteId,
+            issueDate: f3Data.issueDate,
+            dueDate: f3Data.dueDate,
             customerInfoHtml: this._formatCustomerInfo(f3Data),
             termsAndConditions: (f3Data.termsConditions || 'Standard terms and conditions apply.').replace(/\n/g, '<br>'),
 
-            // Static Placeholder Data
-            itemsTableBody: '<tr><td data-label="#">1</td><td data-label="Description">Roller Blinds Package - Summary</td><td data-label="QTY" class="align-right">1</td><td data-label="Price" class="align-right"><span class="original-price">$0.00</span></td><td data-label="Discounted Price" class="align-right"><span class="discounted-price">$0.00</span></td></tr>',
+            subtotal: `$${summaryData.sumPrice.toFixed(2)}`,
+            deliveryFee: `$${summaryData.deliveryFee.toFixed(2)}`,
+            installationFee: `$${summaryData.installFee.toFixed(2)}`,
+            gst: `$${(grandTotal / 1.1 * 0.1).toFixed(2)}`,
+            grandTotal: `$${grandTotal.toFixed(2)}`,
+            deposit: `$${(grandTotal * 0.5).toFixed(2)}`,
+            balance: `$${(grandTotal * 0.5).toFixed(2)}`,
+            savings: `$${(summaryData.firstRbPrice - summaryData.disRbPrice).toFixed(2)}`,
+
+            // Placeholder Data for Stage 2 (to be implemented in Stage 3)
+            itemsTableBody: `
+                <tr>
+                    <td data-label="#">1</td>
+                    <td data-label="Description">
+                        <div class="description">Roller Blinds Package</div>
+                        <div class="details">See appendix for detailed specifications.</div>
+                    </td>
+                    <td data-label="QTY" class="align-right">${quoteData.products.rollerBlind.items.length - 1}</td>
+                    <td data-label="Price" class="align-right">
+                        <span class="original-price">$${summaryData.firstRbPrice.toFixed(2)}</span>
+                    </td>
+                    <td data-label="Discounted Price" class="align-right">
+                        <span class="discounted-price">$${summaryData.disRbPrice.toFixed(2)}</span>
+                    </td>
+                </tr>`,
             rollerBlindsTable: '<table><thead><tr><th>#</th><th>Location</th><th>W x H</th><th>Type</th><th>Fabric</th><th>Color</th><th>Options</th></tr></thead><tbody><tr><td>1</td><td>[Location]</td><td>[W] x [H]</td><td>[Type]</td><td>[F-Name]</td><td>[F-Color]</td><td>[Options]</td></tr></tbody></table>',
-            subtotal: '$0.00',
-            deliveryFee: '$0.00',
-            installationFee: '$0.00',
-            gst: '$0.00',
-            grandTotal: '$0.00',
-            deposit: '$0.00',
-            balance: '$0.00',
-            savings: '$0.00'
         };
     }
 
     _populateTemplate(template, data) {
-        // This regex handles both {{key}} and {{{key}}} (for HTML content)
         return template.replace(/\{\{\{?([\w\-]+)\}\}\}?/g, (match, key) => {
-            return data.hasOwnProperty(key) ? data[key] : match;
+            // Check for undefined or null, but allow 0 to be displayed
+            return data[key] !== undefined && data[key] !== null ? data[key] : match;
         });
     }
 
