@@ -44,22 +44,16 @@ export class WorkflowService {
 
             const templateData = this._prepareTemplateData(quoteData, ui, f3Data);
 
-            // [FIX] Correctly implement nested template population.
             // 1. Populate the details page first.
             const populatedDetailsPageHtml = this._populateTemplate(detailsTemplate, templateData);
 
-            // 2. Inject the populated details HTML into the data for the main page.
             const finalTemplateData = { 
                 ...templateData, 
-                // The key 'rollerBlindsTable' is used in 'detailed-item-list-final.html'
-                // The key for injection into the main template is 'detailedItemList', but we are combining documents.
-                // Let's correct the logic to embed the entire populated second page.
-                // For now, we will combine the body contents.
             };
             
-            // A more robust way to combine two full HTML docs for an iframe is to merge their body content.
             const quoteBodyMatch = quoteTemplate.match(/<body[^>]*>([\s\S]*)<\/body>/i);
-            const detailsBodyMatch = populatedDetailsPage.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+            // [FIX] Correct the variable name from populatedDetailsPage to populatedDetailsPageHtml
+            const detailsBodyMatch = populatedDetailsPageHtml.match(/<body[^>]*>([\s\S]*)<\/body>/i);
 
             if (!quoteBodyMatch || !detailsBodyMatch) {
                 throw new Error("Could not find body content in one of the templates.");
