@@ -41,7 +41,8 @@ export class InputHandler {
             if (event.key >= '0' && event.key <= '9') {
                 keyToPublish = event.key;
             } 
-            else {
+            // [FIX] Add a check to ensure event.key is not null or undefined before calling .toLowerCase()
+            else if (event.key) {
                 switch (event.key.toLowerCase()) {
                     case 'w': keyToPublish = 'W'; break;
                     case 'h': keyToPublish = 'H'; break;
