@@ -125,7 +125,7 @@ export class AppContext {
             dualChainView: ctx.get('dualChainView'),
             driveAccessoriesView: ctx.get('driveAccessoriesView'),
         }));
-
+        
         this.register('workflowService', (ctx) => new WorkflowService({
             eventAggregator: ctx.get('eventAggregator'),
             stateService: ctx.get('stateService'),
@@ -135,7 +135,7 @@ export class AppContext {
             detailConfigView: ctx.get('detailConfigView'),
             configManager: ctx.get('configManager'), // [FIX] Pass configManager dependency
         }));
-
+        
         this.register('appController', (ctx) => new AppController(ctx));
     }
 
@@ -165,7 +165,7 @@ export class AppContext {
             f3QuotePrepView: this.get('f3QuotePrepView'),
             f4ActionsView: this.get('f4ActionsView'),
         });
-
+        
         // Pass view instances to LeftPanelComponent
         this.get('leftPanelComponent').setViews({
             detailConfigView: this.get('detailConfigView')
@@ -181,7 +181,7 @@ export class AppContext {
         this.register('summaryComponent', (ctx) => new SummaryComponent({ stateService: ctx.get('stateService') }));
         this.register('notificationComponent', () => new NotificationComponent());
         this.register('dialogComponent', (ctx) => new DialogComponent({ eventAggregator: ctx.get('eventAggregator') }));
-
+        
         this.register('leftPanelInputHandler', (ctx) => new LeftPanelInputHandler({
             eventAggregator: ctx.get('eventAggregator'),
             stateService: ctx.get('stateService'),
