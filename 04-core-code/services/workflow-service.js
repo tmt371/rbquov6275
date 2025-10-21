@@ -33,7 +33,6 @@ export class WorkflowService {
 
     async handlePrintableQuoteRequest() {
         try {
-            // Stage 1: Fetch both HTML templates.
             const [quoteTemplate, detailsTemplate] = await Promise.all([
                 fetch(paths.partials.quoteTemplate).then(res => res.ok ? res.text() : Promise.reject(new Error(`Failed to load ${paths.partials.quoteTemplate}`))),
                 fetch(paths.partials.detailedItemList).then(res => res.ok ? res.text() : Promise.reject(new Error(`Failed to load ${paths.partials.detailedItemList}`))),
@@ -44,25 +43,25 @@ export class WorkflowService {
 
             const templateData = this._prepareTemplateData(quoteData, ui, f3Data);
 
-            // 1. Populate the details page first.
             const populatedDetailsPageHtml = this._populateTemplate(detailsTemplate, templateData);
 
-            const finalTemplateData = { 
-                ...templateData, 
-            };
-            
-            const quoteBodyMatch = quoteTemplate.match(/<body[^>]*>([\s\S]*)<\/body>/i);
-            // [FIX] Correct the variable name from populatedDetailsPage to populatedDetailsPageHtml
+            // [FIX] Correctly extract both style and body from the second page.
+            const styleMatch = populatedDetailsPageHtml.match(/<style>([\s\S]*)<\/style>/i);
             const detailsBodyMatch = populatedDetailsPageHtml.match(/<body[^>]*>([\s\S]*)<\/body>/i);
 
-            if (!quoteBodyMatch || !detailsBodyMatch) {
-                throw new Error("Could not find body content in one of the templates.");
+            if (!detailsBodyMatch) {
+                throw new Error("Could not find body content in the details template.");
             }
 
-            const combinedBodyContent = quoteBodyMatch[1] + detailsBodyMatch[1];
-            let finalHtml = quoteTemplate.replace(quoteBodyMatch[1], combinedBodyContent);
-            finalHtml = this._populateTemplate(finalHtml, finalTemplateData);
+            const detailsStyleContent = styleMatch ? styleMatch[0] : '';
+            const detailsBodyContent = detailsBodyMatch[1];
+            
+            // Inject the second page's styles into the first page's head, and the body content into the body.
+            let finalHtml = quoteTemplate.replace('</head>', `${detailsStyleContent}</head>`);
+            finalHtml = finalHtml.replace('</body>', `${detailsBodyContent}</body>`);
 
+            // Now, populate the combined template with all the data.
+            finalHtml = this._populateTemplate(finalHtml, templateData);
 
             this.eventAggregator.publish(EVENTS.SHOW_QUOTE_PREVIEW, finalHtml);
 
