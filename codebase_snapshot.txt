@@ -3655,7 +3655,7 @@ text eol=lf
 {
   "name": "@babel/plugin-transform-typeof-symbol",
   "version": "7.27.1",
-  "description": "This transformer wraps all typeof expressions with a method that replicates native behaviour. (ie. returning °ßsymbol°® for symbols)",
+  "description": "This transformer wraps all typeof expressions with a method that replicates native behaviour. (ie. returning ?úsymbol??for symbols)",
   "repository": {
     "type": "git",
     "url": "https://github.com/babel/babel.git",
@@ -6800,7 +6800,7 @@ text eol=lf
             "url": "https://github.com/jason0x43"
         },
         {
-            "name": "Zacharias Bjorngren",
+            "name": "Zacharias Bj√∂rngren",
             "githubUsername": "zache",
             "url": "https://github.com/zache"
         }
@@ -6983,7 +6983,7 @@ text eol=lf
             "url": "https://github.com/ExE-Boss"
         },
         {
-            "name": "Piotr B?a?ejewicz",
+            "name": "Piotr B?a≈ºejewicz",
             "githubUsername": "peterblazejewicz",
             "url": "https://github.com/peterblazejewicz"
         },
@@ -7003,7 +7003,7 @@ text eol=lf
             "url": "https://github.com/NodeJS"
         },
         {
-            "name": "Linus Unneback",
+            "name": "Linus Unneb√§ck",
             "githubUsername": "LinusU",
             "url": "https://github.com/LinusU"
         },
@@ -7023,7 +7023,7 @@ text eol=lf
             "url": "https://github.com/Semigradsky"
         },
         {
-            "name": "Rene",
+            "name": "Ren√©",
             "githubUsername": "Renegade334",
             "url": "https://github.com/Renegade334"
         },
@@ -7157,7 +7157,7 @@ text eol=lf
             "url": "https://github.com/JimiC"
         },
         {
-            "name": "Steffen Viken Valvag",
+            "name": "Steffen Viken Valv√•g",
             "githubUsername": "steffenvv",
             "url": "https://github.com/steffenvv"
         },
@@ -8369,7 +8369,7 @@ text eol=lf
     "url": "https://github.com/nicolo-ribaudo/babel-preset-current-node-syntax.git"
   },
   "author": {
-    "name": "Nicolo Ribaudo",
+    "name": "Nicol√≤ Ribaudo",
     "url": "https://github.com/nicolo-ribaudo"
   },
   "scripts": {
@@ -8938,7 +8938,7 @@ text eol=lf
 {
 	"name": "camelcase",
 	"version": "5.3.1",
-	"description": "Convert a dash/dot/underscore/space separated string to camelCase or PascalCase: `foo-bar` °˜ `fooBar`",
+	"description": "Convert a dash/dot/underscore/space separated string to camelCase or PascalCase: `foo-bar` ??`fooBar`",
 	"license": "MIT",
 	"repository": "sindresorhus/camelcase",
 	"author": {
@@ -9507,7 +9507,7 @@ text eol=lf
 
 --- FILE START: node_modules/combined-stream/package.json ---
 {
-  "author": "Felix Geisendorfer <felix@debuggable.com> (http://debuggable.com/)",
+  "author": "Felix Geisend√∂rfer <felix@debuggable.com> (http://debuggable.com/)",
   "name": "combined-stream",
   "description": "A stream that emits multiple other streams one after another.",
   "version": "1.0.8",
@@ -9720,7 +9720,7 @@ text eol=lf
     "cmd",
     "execute"
   ],
-  "author": "Andre Cruz <andre@moxy.studio>",
+  "author": "Andr√© Cruz <andre@moxy.studio>",
   "homepage": "https://github.com/moxystudio/node-cross-spawn",
   "repository": {
     "type": "git",
@@ -10091,7 +10091,7 @@ text eol=lf
 {
   "name": "dedent",
   "version": "1.7.0",
-  "description": "A string tag that strips indentation from multi-line strings. ??",
+  "description": "A string tag that strips indentation from multi-line strings. ‚¨ÖÔ?",
   "keywords": [
     "dedent",
     "tag",
@@ -10318,7 +10318,7 @@ text eol=lf
 
 --- FILE START: node_modules/delayed-stream/package.json ---
 {
-  "author": "Felix Geisendorfer <felix@debuggable.com> (http://debuggable.com/)",
+  "author": "Felix Geisend√∂rfer <felix@debuggable.com> (http://debuggable.com/)",
   "contributors": [
     "Mike Atkins <apeherder@gmail.com>"
   ],
@@ -13136,7 +13136,7 @@ text eol=lf
     "Edo Rivai (edo.rivai.nl)",
     "Jon Schlinkert (http://twitter.com/jonschlinkert)",
     "Paul Miller (paulmillr.com)",
-    "Rouven Wesling (www.rouvenwessling.de)",
+    "Rouven We?ling (www.rouvenwessling.de)",
     "(https://github.com/wtgtybhertgeghgtwtg)"
   ],
   "repository": "jonschlinkert/fill-range",
@@ -13413,7 +13413,7 @@ text eol=lf
 
 --- FILE START: node_modules/form-data/package.json ---
 {
-  "author": "Felix Geisendorfer <felix@debuggable.com> (http://debuggable.com/)",
+  "author": "Felix Geisend√∂rfer <felix@debuggable.com> (http://debuggable.com/)",
   "name": "form-data",
   "description": "A library to create readable \"multipart/form-data\" streams. Can be used to submit forms and file uploads to other web applications.",
   "version": "4.0.4",
@@ -14367,7 +14367,7 @@ text eol=lf
   "author": "Matt Davies <matt@filament.so> (https://github.com/mattpauldavies)",
   "contributors": [
     "Orlin Georgiev (https://github.com/orling)",
-    "Huang Junliang (https://github.com/JLHwung)"
+    "Hu√°ng J√πnli?ng (https://github.com/JLHwung)"
   ],
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
@@ -15825,7 +15825,7 @@ text eol=lf
   "contributors": [
     "Jon Schlinkert (http://twitter.com/jonschlinkert)",
     "Olsten Larck (https://i.am.charlike.online)",
-    "Rouven Wesling (www.rouvenwessling.de)"
+    "Rouven We?ling (www.rouvenwessling.de)"
   ],
   "repository": "jonschlinkert/is-number",
   "bugs": {
@@ -17603,7 +17603,7 @@ text eol=lf
 {
 	"name": "camelcase",
 	"version": "6.3.0",
-	"description": "Convert a dash/dot/underscore/space separated string to camelCase or PascalCase: `foo-bar` °˜ `fooBar`",
+	"description": "Convert a dash/dot/underscore/space separated string to camelCase or PascalCase: `foo-bar` ??`fooBar`",
 	"license": "MIT",
 	"repository": "sindresorhus/camelcase",
 	"funding": "https://github.com/sponsors/sindresorhus",
@@ -18164,7 +18164,7 @@ text eol=lf
     "parser"
   ],
   "author": {
-    "name": "Kat Marchan",
+    "name": "Kat March√°n",
     "email": "kzm@zkat.tech",
     "twitter": "maybekatz"
   },
@@ -19040,9 +19040,9 @@ text eol=lf
     "Brian Woodward (https://twitter.com/doowb)",
     "Devon Govett (http://badassjs.com)",
     "Elan Shanker (https://github.com/es128)",
-    "Fabricio Matte (https://ultcombo.js.org)",
+    "Fabr√≠cio Matt√© (https://ultcombo.js.org)",
     "Jon Schlinkert (http://twitter.com/jonschlinkert)",
-    "Martin Kolarik (https://kolarik.sk)",
+    "Martin Kol√°rik (https://kolarik.sk)",
     "Olsten Larck (https://i.am.charlike.online)",
     "Paul Miller (paulmillr.com)",
     "Tom Byrer (https://github.com/tomByrer)",
@@ -21414,7 +21414,7 @@ text eol=lf
 {
 	"name": "regexpu-core",
 	"version": "6.4.0",
-	"description": "regexpu°¶s core functionality (i.e. `rewritePattern(pattern, flag)`), capable of translating ES6 Unicode regular expressions to ES5.",
+	"description": "regexpu?ôs core functionality (i.e. `rewritePattern(pattern, flag)`), capable of translating ES6 Unicode regular expressions to ES5.",
 	"homepage": "https://mths.be/regexpu",
 	"main": "rewrite-pattern.js",
 	"engines": {
@@ -21485,7 +21485,7 @@ text eol=lf
 {
   "name": "regjsgen",
   "version": "0.8.0",
-  "description": "Generate regular expressions from regjsparser°¶s AST.",
+  "description": "Generate regular expressions from regjsparser?ôs AST.",
   "homepage": "https://github.com/bnjmnt4n/regjsgen",
   "main": "regjsgen.js",
   "keywords": [
@@ -22354,7 +22354,7 @@ text eol=lf
 	"license": "MIT",
 	"repository": "kevva/shebang-command",
 	"author": {
-		"name": "Kevin Martensson",
+		"name": "Kevin M√•rtensson",
 		"email": "kevinmartensson@gmail.com",
 		"url": "github.com/kevva"
 	},
@@ -22580,7 +22580,7 @@ text eol=lf
     "Chris Truter <jeffpalentine@gmail.com>",
     "Daniel Espeset <daniel@danielespeset.com>",
     "Jamie Wong <jamie.lf.wong@gmail.com>",
-    "Eddy Bruel <ejpbruel@mozilla.com>",
+    "Eddy Bru√´l <ejpbruel@mozilla.com>",
     "Hawken Rives <hawkrives@gmail.com>",
     "Gilad Peleg <giladp007@gmail.com>",
     "djchie <djchie.dev@gmail.com>",
@@ -23342,7 +23342,7 @@ text eol=lf
   "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
   "contributors": [
     "Jon Schlinkert (http://twitter.com/jonschlinkert)",
-    "Rouven Wesling (www.rouvenwessling.de)"
+    "Rouven We?ling (www.rouvenwessling.de)"
   ],
   "repository": "micromatch/to-regex-range",
   "bugs": {
@@ -23634,7 +23634,7 @@ text eol=lf
 --- FILE END ---
 
 --- FILE START: node_modules/type-detect/package.json ---
-{"name":"type-detect","description":"Improved typeof detection for node.js and the browser.","keywords":["type","typeof","types"],"license":"MIT","author":"Jake Luer <jake@alogicalparadox.com> (http://alogicalparadox.com)","contributors":["Keith Cirkel (https://github.com/keithamus)","David Losert (https://github.com/davelosert)","Aleksey Shvayka (https://github.com/shvaikalesh)","Lucas Fernandes da Costa (https://github.com/lucasfcosta)","Grant Snodgrass (https://github.com/meeber)","Jeremy Tice (https://github.com/jetpacmonkey)","Edward Betts (https://github.com/EdwardBetts)","dvlsg (https://github.com/dvlsg)","Amila Welihinda (https://github.com/amilajack)","Jake Champion (https://github.com/JakeChampion)","Miroslav Bajto? (https://github.com/bajtos)"],"files":["index.js","type-detect.js"],"main":"./type-detect.js","repository":{"type":"git","url":"git+ssh://git@github.com/chaijs/type-detect.git"},"scripts":{"bench":"node bench","build":"rollup -c rollup.conf.js","commit-msg":"commitlint -x angular","lint":"eslint --ignore-path .gitignore .","prepare":"cross-env NODE_ENV=production npm run build","semantic-release":"semantic-release pre && npm publish && semantic-release post","pretest:node":"cross-env NODE_ENV=test npm run build","pretest:browser":"cross-env NODE_ENV=test npm run build","test":"npm run test:node && npm run test:browser","test:browser":"karma start --singleRun=true","test:node":"nyc mocha type-detect.test.js","posttest:node":"nyc report --report-dir \"coverage/node-$(node --version)\" --reporter=lcovonly && npm run upload-coverage","posttest:browser":"npm run upload-coverage","upload-coverage":"codecov"},"eslintConfig":{"env":{"es6":true},"extends":["strict/es6"],"globals":{"HTMLElement":false},"rules":{"complexity":0,"max-statements":0,"prefer-rest-params":0}},"devDependencies":{"@commitlint/cli":"^4.2.2","benchmark":"^2.1.0","buble":"^0.16.0","codecov":"^3.0.0","commitlint-config-angular":"^4.2.1","cross-env":"^5.1.1","eslint":"^4.10.0","eslint-config-strict":"^14.0.0","eslint-plugin-filenames":"^1.2.0","husky":"^0.14.3","karma":"^1.7.1","karma-chrome-launcher":"^2.2.0","karma-coverage":"^1.1.1","karma-detect-browsers":"^2.2.5","karma-edge-launcher":"^0.4.2","karma-firefox-launcher":"^1.0.1","karma-ie-launcher":"^1.0.0","karma-mocha":"^1.3.0","karma-opera-launcher":"^1.0.0","karma-safari-launcher":"^1.0.0","karma-safaritechpreview-launcher":"0.0.6","karma-sauce-launcher":"^1.2.0","mocha":"^4.0.1","nyc":"^11.3.0","rollup":"^0.50.0","rollup-plugin-buble":"^0.16.0","rollup-plugin-commonjs":"^8.2.6","rollup-plugin-istanbul":"^1.1.0","rollup-plugin-node-resolve":"^3.0.0","semantic-release":"^8.2.0","simple-assert":"^1.0.0"},"engines":{"node":">=4"},"version":"4.0.8"}
+{"name":"type-detect","description":"Improved typeof detection for node.js and the browser.","keywords":["type","typeof","types"],"license":"MIT","author":"Jake Luer <jake@alogicalparadox.com> (http://alogicalparadox.com)","contributors":["Keith Cirkel (https://github.com/keithamus)","David Losert (https://github.com/davelosert)","Aleksey Shvayka (https://github.com/shvaikalesh)","Lucas Fernandes da Costa (https://github.com/lucasfcosta)","Grant Snodgrass (https://github.com/meeber)","Jeremy Tice (https://github.com/jetpacmonkey)","Edward Betts (https://github.com/EdwardBetts)","dvlsg (https://github.com/dvlsg)","Amila Welihinda (https://github.com/amilajack)","Jake Champion (https://github.com/JakeChampion)","Miroslav Bajto≈° (https://github.com/bajtos)"],"files":["index.js","type-detect.js"],"main":"./type-detect.js","repository":{"type":"git","url":"git+ssh://git@github.com/chaijs/type-detect.git"},"scripts":{"bench":"node bench","build":"rollup -c rollup.conf.js","commit-msg":"commitlint -x angular","lint":"eslint --ignore-path .gitignore .","prepare":"cross-env NODE_ENV=production npm run build","semantic-release":"semantic-release pre && npm publish && semantic-release post","pretest:node":"cross-env NODE_ENV=test npm run build","pretest:browser":"cross-env NODE_ENV=test npm run build","test":"npm run test:node && npm run test:browser","test:browser":"karma start --singleRun=true","test:node":"nyc mocha type-detect.test.js","posttest:node":"nyc report --report-dir \"coverage/node-$(node --version)\" --reporter=lcovonly && npm run upload-coverage","posttest:browser":"npm run upload-coverage","upload-coverage":"codecov"},"eslintConfig":{"env":{"es6":true},"extends":["strict/es6"],"globals":{"HTMLElement":false},"rules":{"complexity":0,"max-statements":0,"prefer-rest-params":0}},"devDependencies":{"@commitlint/cli":"^4.2.2","benchmark":"^2.1.0","buble":"^0.16.0","codecov":"^3.0.0","commitlint-config-angular":"^4.2.1","cross-env":"^5.1.1","eslint":"^4.10.0","eslint-config-strict":"^14.0.0","eslint-plugin-filenames":"^1.2.0","husky":"^0.14.3","karma":"^1.7.1","karma-chrome-launcher":"^2.2.0","karma-coverage":"^1.1.1","karma-detect-browsers":"^2.2.5","karma-edge-launcher":"^0.4.2","karma-firefox-launcher":"^1.0.1","karma-ie-launcher":"^1.0.0","karma-mocha":"^1.3.0","karma-opera-launcher":"^1.0.0","karma-safari-launcher":"^1.0.0","karma-safaritechpreview-launcher":"0.0.6","karma-sauce-launcher":"^1.2.0","mocha":"^4.0.1","nyc":"^11.3.0","rollup":"^0.50.0","rollup-plugin-buble":"^0.16.0","rollup-plugin-commonjs":"^8.2.6","rollup-plugin-istanbul":"^1.1.0","rollup-plugin-node-resolve":"^3.0.0","semantic-release":"^8.2.0","simple-assert":"^1.0.0"},"engines":{"node":">=4"},"version":"4.0.8"}
 
 --- FILE END ---
 
@@ -32370,21 +32370,21 @@ body {
 // jest.config.js
 
 export default {
-  // ßi∂D Jest ¶b∞ı¶Ê¥˙∏’´e°A®œ•Œ babel-jest ®”¬‡ƒ∂ .js ¿…Æ◊
+  // ?äË®¥ Jest ?®Âü∑Ë°åÊ∏¨Ë©¶Â?Ôºå‰Ωø??babel-jest ‰æÜË?Ë≠?.js Ê™îÊ?
   transform: {
     '^.+\\.js$': 'babel-jest',
   },
   
-  // ¥˙∏’¿Ùπ“≥]¨∞ jsdom°A≈˝ß⁄≠Ã•i•H®œ•Œ¬sƒ˝æπ¿Ùπ“§§™∫™´•Û (¶p window)
+  // Ê∏¨Ë©¶?∞Â?Ë®≠ÁÇ∫ jsdomÔºåË??ëÂÄëÂèØ‰ª•‰Ωø?®ÁÄèË¶Ω?®Áí∞Â¢É‰∏≠?ÑÁâ©‰ª?(Â¶?window)
   testEnvironment: 'jsdom',
 
-  // ¥˙∏’¿…Æ◊™∫§«∞tº“¶°
+  // Ê∏¨Ë©¶Ê™îÊ??ÑÂåπ?çÊ®°Âº?
   testMatch: [
     '**/__tests__/**/*.js',
     '**/?(*.)+(spec|test).js'
   ],
 
-  // ±Nª∑∫›™∫ uuid º“≤’ URL ¨MÆg®Ï•ª¶a¶w∏À™∫ npm ÆM•Û°A•H∏—®M Node.js ¿Ùπ“§U™∫æ…§J∞›√D
+  // Â∞áÈ?Á´ØÁ? uuid Ê®°Á? URL ?†Â??∞Êú¨?∞Â?Ë£ùÁ? npm Â•ó‰ª∂Ôºå‰ª•Ëß?±∫ Node.js ?∞Â?‰∏ãÁ?Â∞éÂÖ•?èÈ?
   moduleNameMapper: {
     'https://cdn.jsdelivr.net/npm/uuid@9.0.1/dist/esm-browser/index.js': 'uuid',
   },
@@ -32640,16 +32640,16 @@ export default {
 
 /**
  * @description
- * AppContext ¨O§@≠”¬≤©ˆ™∫®Ãø‡™`§J°]DI°^Æeæπ°A•Œ©Û∫ﬁ≤z¿≥•Œµ{¶°§§¶Uº“≤’™∫πÍ®“§∆ªP®Ãø‡√ˆ´Y°C
- * •¶™∫•D≠n¬æ≥d¨O°G
- * 1. ∂∞§§≥–´ÿªP∞t∏m™A∞»°]Services°^°B∫ﬁ≤zæπ°]Managers°^°B§uºt°]Factories°^ªPµ¯πœ°]Views°^°C
- * 2. ≥B≤zº“≤’§ß∂°™∫®Ãø‡°AΩT´O®C≠”º“≤’≥£Ø‡¿Ú±o•¶©“ª›≠n™∫®‰•Lº“≤’™∫πÍ®“°C
- * 3. ¬≤§∆ `main.js`°A®œ®‰•u±M™`©Û¿≥•Œ™∫±“∞ ¨yµ{°A¶”´D™´•Û™∫≥–´ÿ≤”∏`°C
+ * AppContext ?Ø‰??ãÁ∞°?ìÁ?‰æùË≥¥Ê≥®ÂÖ•ÔºàDIÔºâÂÆπ?®Ô??®ÊñºÁÆ°Á??âÁî®Á®ãÂ?‰∏≠Â?Ê®°Á??ÑÂØ¶‰æãÂ??á‰?Ë≥¥È?‰øÇ„Ä?
+ * ÂÆÉÁ?‰∏ªË??∑Ë≤¨?ØÔ?
+ * 1. ?Ü‰∏≠?µÂª∫?áÈ?ÁΩÆÊ??ôÔ?ServicesÔºâ„ÄÅÁÆ°?ÜÂô®ÔºàManagersÔºâ„ÄÅÂ∑•Âª†Ô?FactoriesÔºâË?Ë¶ñÂ?ÔºàViewsÔºâ„Ä?
+ * 2. ?ïÁ?Ê®°Á?‰πãÈ??Ñ‰?Ë≥¥Ô?Á¢∫‰?ÊØèÂÄãÊ®°ÁµÑÈÉΩ?ΩÁç≤ÂæóÂ??Ä?ÄË¶ÅÁ??∂‰?Ê®°Á??ÑÂØ¶‰æã„Ä?
+ * 3. Á∞°Â? `main.js`Ôºå‰Ωø?∂Âè™Â∞àÊ≥®?ºÊ??®Á??üÂ?ÊµÅÁ?ÔºåËÄåÈ??©‰ª∂?ÑÂâµÂª∫Á¥∞ÁØÄ??
  *
- * ≥o≠”º“¶°™∫¶n≥B¨O°G
- * - **∂∞§§∫ﬁ≤z**: ©“¶≥™´•Û™∫≥–´ÿ≈ﬁøË≥£∂∞§§¶b¶π°A§Ë´K∫˚≈@ªP≠◊ßÔ°C
- * - **≠∞ßCΩ¢¶X**: º“≤’§ß∂°§£™Ω±µ≥–´ÿ®Ãø‡°A¶”¨O≥zπL AppContext ®”¿Ú®˙°A≠∞ßC§FΩ¢¶X´◊°C
- * - **´K©Û¥˙∏’**: ¶b¥˙∏’Æ…°A•i•Hª¥©ˆ¶a¥¿¥´ØuπÍ™∫®Ãø‡°A™`§Jº“¿¿°]mock°^™∫™´•Û°C
+ * ?ôÂÄãÊ®°ÂºèÁ?Â•ΩË??ØÔ?
+ * - **?Ü‰∏≠ÁÆ°Á?**: ?Ä?âÁâ©‰ª∂Á??µÂª∫?èËºØ?ΩÈ?‰∏≠Âú®Ê≠§Ô??π‰æøÁ∂≠Ë≠∑?á‰øÆ?π„Ä?
+ * - **?ç‰??¶Â?**: Ê®°Á?‰πãÈ?‰∏çÁõ¥?•ÂâµÂª∫‰?Ë≥¥Ô??åÊòØ?èÈ? AppContext ‰æÜÁç≤?ñÔ??ç‰?‰∫ÜËÄ¶Â?Â∫¶„Ä?
+ * - **‰æøÊñºÊ∏¨Ë©¶**: ?®Ê∏¨Ë©¶Ê?ÔºåÂèØ‰ª•Ë??ìÂú∞?øÊ??üÂØ¶?Ñ‰?Ë≥¥Ô?Ê≥®ÂÖ•Ê®°Êì¨ÔºàmockÔºâÁ??©‰ª∂??
  */
 export class AppContext {
     constructor() {
@@ -32657,18 +32657,18 @@ export class AppContext {
     }
 
     /**
-     * µ˘•U§@≠”πÍ®“°C
-     * @param {string} name - πÍ®“™∫¶W∫Ÿ°C
-     * @param {object} instance - ≠nµ˘•U™∫πÍ®“°C
+     * Ë®ªÂ?‰∏Ä?ãÂØ¶‰æã„Ä?
+     * @param {string} name - ÂØ¶‰??ÑÂ?Á®±„Ä?
+     * @param {object} instance - Ë¶ÅË®ª?äÁ?ÂØ¶‰???
      */
     register(name, instance) {
         this.instances[name] = instance;
     }
 
     /**
-     * ¿Ú®˙§@≠”πÍ®“°C
-     * @param {string} name - ±˝¿Ú®˙™∫πÍ®“™∫¶W∫Ÿ°C
-     * @returns {object} - ™¶^πÔ¿≥™∫πÍ®“°C
+     * ?≤Â?‰∏Ä?ãÂØ¶‰æã„Ä?
+     * @param {string} name - Ê¨≤Áç≤?ñÁ?ÂØ¶‰??ÑÂ?Á®±„Ä?
+     * @returns {object} - ËøîÂ?Â∞çÊ??ÑÂØ¶‰æã„Ä?
      */
     get(name) {
         const instance = this.instances[name];
@@ -33115,19 +33115,16 @@ export class ConfigManager {
 // /04_CoreCode/EventAggregator.js
 
 /**
- * EventAggregator (∑æ≥q§§ºœ / §§•°Ø´∏g®t≤Œ)
- * πÍ≤{§F°uµo•¨/≠qæ\°vº“¶°°A¨Oæ„≠”¿≥•Œµ{¶°™∫®∆•Û≥q∞TÆ÷§ﬂ°C
- */
+ * EventAggregator (Ê∫ùÈÄö‰∏≠Ê®?/ ‰∏≠Â§ÆÁ•ûÁ?Á≥ªÁµ±)
+ * ÂØ¶Áèæ‰∫Ü„ÄåÁôºÂ∏?Ë®ÇÈñ±?çÊ®°ÂºèÔ??ØÊï¥?ãÊ??®Á?ÂºèÁ?‰∫ã‰ª∂?öË??∏Â??? */
 export class EventAggregator {
     constructor() {
         this.events = {};
     }
 
     /**
-     * ≠qæ\§@≠”®∆•Û
-     * @param {string} eventName - ®∆•Û¶W∫Ÿ
-     * @param {Function} callback - ®∆•Ûƒ≤µoÆ…≠n∞ı¶Ê™∫¶^Ω’®Á¶°
-     */
+     * Ë®ÇÈñ±‰∏Ä?ã‰?‰ª?     * @param {string} eventName - ‰∫ã‰ª∂?çÁ®±
+     * @param {Function} callback - ‰∫ã‰ª∂Ëß∏Áôº?ÇË??∑Ë??ÑÂ?Ë™øÂáΩÂº?     */
     subscribe(eventName, callback) {
         if (!this.events[eventName]) {
             this.events[eventName] = [];
@@ -33136,9 +33133,8 @@ export class EventAggregator {
     }
 
     /**
-     * µo•¨§@≠”®∆•Û
-     * @param {string} eventName - ®∆•Û¶W∫Ÿ
-     * @param {*} data - ≠n∂«ªºµπ≠qæ\™Ã™∫º∆æ⁄
+     * ?ºÂ?‰∏Ä?ã‰?‰ª?     * @param {string} eventName - ‰∫ã‰ª∂?çÁ®±
+     * @param {*} data - Ë¶ÅÂÇ≥?ûÁµ¶Ë®ÇÈñ±?ÖÁ??∏Ê?
      */
     publish(eventName, data) {
         if (this.events[eventName]) {
@@ -35220,8 +35216,8 @@ export class MigrationService {
     constructor() {}
 
     /**
-     * ±q localStorage ∏¸§J®√æE≤æ¶€∞ ¿x¶s™∫∏ÍÆ∆°C
-     * @returns {object|null} - ™¶^æE≤æ´·™∫ quoteData°A¶p™G®S¶≥∏ÍÆ∆©ŒæE≤æ•¢±—´h™¶^ null°C
+     * Âæ?localStorage ËºâÂÖ•‰∏¶ÈÅ∑ÁßªËá™?ïÂÑ≤Â≠òÁ?Ë≥áÊ???
+     * @returns {object|null} - ËøîÂ??∑ÁßªÂæåÁ? quoteDataÔºåÂ??úÊ??âË??ôÊ??∑ÁßªÂ§±Ê??áË???null??
      */
     loadAndMigrateData() {
         try {
@@ -35254,12 +35250,12 @@ export class MigrationService {
     }
 
     /**
-     * ∞ı¶Ê∏ÍÆ∆ÆÊ¶°™∫æE≤æ°C
-     * @param {object} oldData - ¬¬ÆÊ¶°™∫∏ÍÆ∆°C
-     * @returns {object|null} - ™¶^∑sÆÊ¶°™∫∏ÍÆ∆°A¶p™GµL™k√—ßO´h™¶^ null°C
+     * ?∑Ë?Ë≥áÊ??ºÂ??ÑÈÅ∑Áßª„Ä?
+     * @param {object} oldData - ?äÊ†ºÂºèÁ?Ë≥áÊ???
+     * @returns {object|null} - ËøîÂ??∞Ê†ºÂºèÁ?Ë≥áÊ?ÔºåÂ??úÁÑ°Ê≥ïË??•Â?ËøîÂ? null??
      */
     _migrate(oldData) {
-        // ¿À¨d¨Oß_¨∞∑sÆÊ¶°•B•]ßt uiMetadata°A≠YµL´h≠◊∏…
+        // Ê™¢Êü•?ØÂê¶?∫Êñ∞?ºÂ?‰∏îÂ???uiMetadataÔºåËã•?°Â?‰øÆË?
         if (oldData && oldData.products && oldData.currentProduct) {
             if (!oldData.uiMetadata) {
                 console.warn("Patching modern auto-saved data with missing uiMetadata.");
@@ -35268,7 +35264,7 @@ export class MigrationService {
             return oldData;
         }
 
-        // ≥B≤z¬¬™©∏ÍÆ∆ÆÊ¶°™∫æE≤æ
+        // ?ïÁ??äÁ?Ë≥áÊ??ºÂ??ÑÈÅ∑Áß?
         if (oldData && oldData.rollerBlindItems) {
             console.warn("Migrating legacy auto-saved data to the new format...");
             const newData = {
@@ -35857,17 +35853,17 @@ describe('WorkflowService', () => {
  * This allows the application to easily support multiple product types.
  */
 
-// ∂◊§Jß⁄≠Ã•ÿ´e∞ﬂ§@™∫§@≠”≤£´~µ¶≤§
+// ?ØÂÖ•?ëÂÄëÁõÆ?çÂîØ‰∏Ä?Ñ‰??ãÁî¢?ÅÁ???
 import { RollerBlindStrategy } from './roller-blind-strategy.js';
 
-// ´ÿ•ﬂ§@≠”≤£´~µ¶≤§™∫¶aπœ (Map)
-// Key: ≤£´~√˛´¨™∫¶r¶Í
-// Value: πÔ¿≥™∫µ¶≤§√˛ßO
+// Âª∫Á?‰∏Ä?ãÁî¢?ÅÁ??•Á??∞Â? (Map)
+// Key: ?¢Â?È°ûÂ??ÑÂ?‰∏?
+// Value: Â∞çÊ??ÑÁ??•È???
 const strategyMap = {
     rollerBlind: RollerBlindStrategy,
-    // --- •º®”¬X•R ---
-    // sheerCurtain: SheerCurtainStrategy, // •º®”∑sºWØΩ√ÆÆ…°A•uª›¶b¶π≥BºW•[§@¶Ê
-    // flyScreen: FlyScreenStrategy,       // ∑sºW¶˘¡YØΩ™˘Æ…°A¶A•[§@¶Ê
+    // --- ?™‰??¥Â? ---
+    // sheerCurtain: SheerCurtainStrategy, // ?™‰??∞Â?Á¥óÁ∞æ?ÇÔ??™È??®Ê≠§?ïÂ??†‰?Ë°?
+    // flyScreen: FlyScreenStrategy,       // ?∞Â?‰º∏Á∏ÆÁ¥óÈ??ÇÔ??çÂ?‰∏ÄË°?
 };
 
 export class ProductFactory {
@@ -35885,7 +35881,7 @@ export class ProductFactory {
         const StrategyClass = strategyMap[productType];
 
         if (StrategyClass) {
-            // ¶^∂«§@≠”∑s™∫µ¶≤§πÍ®“°A®√∂«§J®Ãø‡
+            // ?ûÂÇ≥‰∏Ä?ãÊñ∞?ÑÁ??•ÂØ¶‰æãÔ?‰∏¶ÂÇ≥?•‰?Ë≥?
             return new StrategyClass({ configManager: this.configManager });
         } else {
             console.error(`No strategy found for product type: ${productType}`);
@@ -38745,7 +38741,7 @@ export class UIManager {
             --border-dark-grey: #555555;
             --border-light-grey: #dddddd;
             --header-bg-color: #E6E6E6;
-            /* 10% ¶«¶‚ */
+            /* 10% ?∞Ëâ≤ */
         }
 
         body {
@@ -39370,15 +39366,15 @@ export class UIManager {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quotation - {{quoteId}}</title>
     <style>
-        /* --- ≥q•ŒºÀ¶°ªP≈‹º∆ --- */
+        /* --- ?öÁî®Ê®???áË???--- */
         :root {
             --primary-color: #1a237e;
-            /* ≤`¬≈¶‚ */
+            /* Ê∑±Ë???*/
             --border-color: #e0e0e0;
-            /* √‰Æÿ√C¶‚ */
+            /* ?äÊ?È°èËâ≤ */
             --text-color: #333;
             --success-color: #2e7d32;
-            /* ∫Ò¶‚°A•Œ©Û∏`¨Ÿ™˜√B */
+            /* Á∂†Ëâ≤ÔºåÁî®?ºÁ??ÅÈ?È°?*/
             --icon-color: #888888;
         }
 
@@ -39403,7 +39399,7 @@ export class UIManager {
             padding: 40px;
         }
 
-        /* --- ≠∂≠∫ Header --- */
+        /* --- ?ÅÈ? Header --- */
         .header {
             display: flex;
             justify-content: space-between;
@@ -39413,7 +39409,7 @@ export class UIManager {
             margin-bottom: 30px;
         }
 
-        /* §Ω•q∏Í∞T∞œ∂Ù */
+        /* ?¨Âè∏Ë≥áË??ÄÂ°?*/
         .company-details {
             text-align: right;
         }
@@ -39433,7 +39429,7 @@ export class UIManager {
             justify-content: flex-end;
         }
 
-        /* ≥¯ª˘≥Ê∏Í∞T∞œ∂Ù */
+        /* ?±ÂÉπ?ÆË?Ë®äÂ?Â°?*/
         .quotation-meta {
             text-align: left;
         }
@@ -39442,7 +39438,7 @@ export class UIManager {
             margin: 0 0 20px 0;
             font-size: 24px;
             color: #B22222;
-            /* Brick Red øj¨ı¶‚ */
+            /* Brick Red Á£öÁ???*/
         }
 
         .quotation-meta p {
@@ -39471,7 +39467,7 @@ export class UIManager {
             padding-right: 28px;
         }
 
-        /* --- ´»§·∏Í∞T --- */
+        /* --- ÂÆ¢Êà∂Ë≥áË? --- */
         .customer-info {
             margin-bottom: 40px;
         }
@@ -39481,7 +39477,7 @@ export class UIManager {
             line-height: 1.6;
         }
 
-        /* --- ≤£´~∂µ•ÿ™ÌÆÊ --- */
+        /* --- ?¢Â??ÖÁõÆË°®Ê†º --- */
         .items-table {
             width: 100%;
             border-collapse: collapse;
@@ -39532,7 +39528,7 @@ export class UIManager {
             color: #d32f2f;
         }
 
-        /* --- ¡`≠p --- */
+        /* --- Á∏ΩË? --- */
         .summary-section {
             display: flex;
             justify-content: flex-end;
@@ -39757,7 +39753,7 @@ export class UIManager {
                     <p>
                         <span>0466 965 168<span class="icon">??</span></span>
                         <span style="margin: 0 10px;">|</span>
-                        <span>ezblinds@ezbns.com.au<span class="icon">??</span></span>
+                        <span>ezblinds@ezbns.com.au<span class="icon">?ìß</span></span>
                     </p>
                     <p>www.ezbns.com.au<span class="icon">??</span></p>
                 </div>

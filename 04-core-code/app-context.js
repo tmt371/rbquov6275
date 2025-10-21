@@ -1,204 +1,195 @@
-// File: 04-core-code/app-context.js
+// 04-core-code/app-context.js
 
+/**
+ * @description
+ * AppContext 是一個簡易的依賴注入（DI）容器，用於管理應用程式中各模組的實例化與依賴關係。
+ * 它的主要職責是：
+ * 1. 集中創建與配置服務（Services）、管理器（Managers）、工廠（Factories）與視圖（Views）。
+ * 2. 處理模組之間的依賴，確保每個模組都能獲得它所需要的其他模組的實例。
+ * 3. 簡化 `main.js`，使其只專注於應用的啟動流程，而非物件的創建細節。
+ *
+ * 這個模式的好處是：
+ * - **集中管理**: 所有物件的創建邏輯都集中在此，方便維護與修改。
+ * - **降低耦合**: 模組之間不直接創建依賴，而是透過 AppContext 來獲取，降低了耦合度。
+ * - **便於測試**: 在測試時，可以輕易地替換真實的依賴，注入模擬（mock）的物件。
+ */
+export class AppContext {
+    constructor() {
+        this.instances = {};
+    }
+
+    /**
+     * 註冊一個實例。
+     * @param {string} name - 實例的名稱。
+     * @param {object} instance - 要註冊的實例。
+     */
+    register(name, instance) {
+        this.instances[name] = instance;
+    }
+
+    /**
+     * 獲取一個實例。
+     * @param {string} name - 欲獲取的實例的名稱。
+     * @returns {object} - 返回對應的實例。
+     */
+    get(name) {
+        const instance = this.instances[name];
+        if (!instance) {
+            throw new Error(`Instance '${name}' not found.`);
+        }
+        return instance;
+    }
+
+    initialize(startingQuoteData = null) {
+        // [MODIFIED] This method now only initializes non-UI services and controllers.
+        const eventAggregator = new EventAggregator();
+        this.register('eventAggregator', eventAggregator);
+
+        const configManager = new ConfigManager(eventAggregator);
+        this.register('configManager', configManager);
+
+        const productFactory = new ProductFactory({ configManager });
+        this.register('productFactory', productFactory);
+
+        let initialStateWithData = JSON.parse(JSON.stringify(initialState));
+        if (startingQuoteData) {
+            initialStateWithData.quoteData = startingQuoteData;
+        }
+
+        const stateService = new StateService({
+            initialState: initialStateWithData,
+            eventAggregator,
+            productFactory,
+            configManager
+        });
+        this.register('stateService', stateService);
+
+        const calculationService = new CalculationService({
+            stateService,
+            productFactory,
+            configManager
+        });
+        this.register('calculationService', calculationService);
+
+        const fileService = new FileService({ productFactory });
+        this.register('fileService', fileService);
+
+        const focusService = new FocusService({
+            stateService
+        });
+        this.register('focusService', focusService);
+    }
+
+    initializeUIComponents() {
+        // [NEW] This method initializes all UI-dependent components.
+        // It must be called AFTER the HTML partials are loaded.
+        const eventAggregator = this.get('eventAggregator');
+        const calculationService = this.get('calculationService');
+        const stateService = this.get('stateService');
+        const configManager = this.get('configManager');
+        const productFactory = this.get('productFactory');
+        const focusService = this.get('focusService');
+        const fileService = this.get('fileService');
+
+        // --- Instantiate Right Panel Sub-Views ---
+        const rightPanelElement = document.getElementById('function-panel');
+        const f1View = new F1CostView({ panelElement: rightPanelElement, eventAggregator, calculationService });
+        const f2View = new F2SummaryView({ panelElement: rightPanelElement, eventAggregator });
+        const f3View = new F3QuotePrepView({ panelElement: rightPanelElement, eventAggregator });
+        const f4View = new F4ActionsView({ panelElement: rightPanelElement, eventAggregator });
+
+        // --- Instantiate Main RightPanelComponent Manager ---
+        const rightPanelComponent = new RightPanelComponent({
+            panelElement: rightPanelElement,
+            eventAggregator,
+            f1View,
+            f2View,
+            f3View,
+            f4View
+        });
+        this.register('rightPanelComponent', rightPanelComponent);
+
+        // --- [NEW] Instantiate Quote Preview Component ---
+        const quotePreviewComponent = new QuotePreviewComponent({
+            containerElement: document.getElementById(DOM_IDS.QUOTE_PREVIEW_OVERLAY),
+            eventAggregator,
+        });
+        this.register('quotePreviewComponent', quotePreviewComponent);
+
+        // --- Instantiate Main Left Panel Views ---
+        const k1LocationView = new K1LocationView({ stateService });
+        const k2FabricView = new K2FabricView({ stateService, eventAggregator });
+        const k3OptionsView = new K3OptionsView({ stateService });
+        const dualChainView = new DualChainView({ stateService, calculationService, eventAggregator });
+        const driveAccessoriesView = new DriveAccessoriesView({ stateService, calculationService, eventAggregator });
+
+        // --- [MODIFIED] Removed obsolete publishStateChangeCallback from DetailConfigView dependencies ---
+        const detailConfigView = new DetailConfigView({
+            stateService,
+            eventAggregator,
+            k1LocationView,
+            k2FabricView,
+            k3OptionsView,
+            dualChainView,
+            driveAccessoriesView
+        });
+        this.register('detailConfigView', detailConfigView);
+
+        const workflowService = new WorkflowService({
+            eventAggregator,
+            stateService,
+            fileService,
+            calculationService,
+            productFactory,
+            detailConfigView
+        });
+        workflowService.setQuotePreviewComponent(quotePreviewComponent); // [NEW] Inject dependency
+        this.register('workflowService', workflowService);
+
+        const quickQuoteView = new QuickQuoteView({
+            stateService,
+            calculationService,
+            focusService,
+            fileService,
+            eventAggregator,
+            productFactory,
+            configManager
+        });
+        this.register('quickQuoteView', quickQuoteView);
+
+        const appController = new AppController({
+            eventAggregator,
+            stateService,
+            workflowService,
+            quickQuoteView,
+            detailConfigView
+        });
+        this.register('appController', appController);
+    }
+}
+
+// Import all necessary classes
 import { EventAggregator } from './event-aggregator.js';
+import { ConfigManager } from './config-manager.js';
+import { AppController } from './app-controller.js';
+import { ProductFactory } from './strategies/product-factory.js';
 import { StateService } from './services/state-service.js';
 import { CalculationService } from './services/calculation-service.js';
-import { FileService } from './services/file-service.js';
-import { MigrationService } from './services/migration-service.js';
-import { WorkflowService } from './services/workflow-service.js';
 import { FocusService } from './services/focus-service.js';
-import { AppController } from './app-controller.js';
-import { UIManager } from './ui/ui-manager.js';
-import { TableComponent } from './ui/table-component.js';
-import { SummaryComponent } from './ui/summary-component.js';
-import { NotificationComponent } from './ui/notification-component.js';
-import { DialogComponent } from './ui/dialog-component.js';
-import { ConfigManager } from './config-manager.js';
-import { ProductFactory } from './strategies/product-factory.js';
-import { LeftPanelInputHandler } from './ui/left-panel-input-handler.js';
-
-// Views
-import { F1CostView } from './ui/views/f1-cost-view.js';
-import { F2SummaryView } from './ui/views/f2-summary-view.js';
-import { F3QuotePrepView } from './ui/views/f3-quote-prep-view.js';
-import { F4ActionsView } from './ui/views/f4-actions-view.js';
+import { FileService } from './services/file-service.js';
+import { WorkflowService } from './services/workflow-service.js';
+import { RightPanelComponent } from './ui/right-panel-component.js';
+import { QuickQuoteView } from './ui/views/quick-quote-view.js';
+import { DetailConfigView } from './ui/views/detail-config-view.js';
 import { K1LocationView } from './ui/views/k1-location-view.js';
 import { K2FabricView } from './ui/views/k2-fabric-view.js';
 import { K3OptionsView } from './ui/views/k3-options-view.js';
 import { DualChainView } from './ui/views/dual-chain-view.js';
 import { DriveAccessoriesView } from './ui/views/drive-accessories-view.js';
-import { DetailConfigView } from './ui/views/detail-config-view.js';
-
-// Core UI Components to be instantiated by main.js
-import { LeftPanelComponent } from './ui/left-panel-component.js';
-import { RightPanelComponent } from './ui/right-panel-component.js';
-import { QuotePreviewComponent } from './ui/quote-preview-component.js';
-
-/**
- * @fileoverview Acts as a Dependency Injection (DI) container.
- * Initializes and wires up all the major components of the application.
- */
-export class AppContext {
-    constructor() {
-        // [CORRECTED] Use an object to store factory functions, not instances.
-        this.factories = {};
-        this.instances = {};
-    }
-
-    /**
-     * Initializes all services and components.
-     * @param {Object} uiElements - A dictionary of pre-fetched DOM elements from main.js
-     */
-    async initialize(uiElements) {
-        // Core Utilities
-        this.register('eventAggregator', () => new EventAggregator());
-        await this.initializeConfigManager();
-
-        // Core Services
-        this.initializeCoreServices();
-
-        // UI Managers and Components
-        this.initializeUIComponents(uiElements);
-
-        console.log('AppContext Initialized.');
-    }
-
-    /**
-     * [CORRECTED] Registers a factory function for a dependency.
-     * @param {string} name - The name of the dependency.
-     * @param {function} factory - A function that creates the dependency.
-     */
-    register(name, factory) {
-        this.factories[name] = factory;
-    }
-
-    /**
-     * [CORRECTED] Resolves a dependency. It creates the instance only once (singleton).
-     * @param {string} name - The name of the dependency.
-     * @returns {*} The resolved dependency instance.
-     */
-    get(name) {
-        if (!this.instances[name]) {
-            const factory = this.factories[name];
-            if (!factory) {
-                throw new Error(`Dependency not found: ${name}`);
-            }
-            // Create the instance and pass 'this' (the context) to the factory.
-            this.instances[name] = factory(this);
-        }
-        return this.instances[name];
-    }
-
-    /**
-     * Initializes the ConfigManager which is required by many other services.
-     */
-    async initializeConfigManager() {
-        this.register('configManager', () => new ConfigManager());
-        await this.get('configManager').loadPriceMatrices();
-    }
-
-    /**
-     * Initializes all the core, non-UI services.
-     */
-    initializeCoreServices() {
-        this.register('migrationService', (ctx) => new MigrationService());
-        this.register('stateService', (ctx) => new StateService({ migrationService: ctx.get('migrationService') }));
-        this.register('productFactory', (ctx) => new ProductFactory({ configManager: ctx.get('configManager') }));
-        this.register('calculationService', (ctx) => new CalculationService({ productFactory: ctx.get('productFactory'), stateService: ctx.get('stateService') }));
-        this.register('fileService', () => new FileService());
-        this.register('focusService', (ctx) => new FocusService({ eventAggregator: ctx.get('eventAggregator') }));
-
-        // Views (required by WorkflowService and AppController)
-        this.register('k1LocationView', (ctx) => new K1LocationView({ eventAggregator: ctx.get('eventAggregator'), stateService: ctx.get('stateService') }));
-        this.register('k2FabricView', (ctx) => new K2FabricView({ eventAggregator: ctx.get('eventAggregator'), stateService: ctx.get('stateService'), configManager: ctx.get('configManager') }));
-        this.register('k3OptionsView', (ctx) => new K3OptionsView({ eventAggregator: ctx.get('eventAggregator'), stateService: ctx.get('stateService') }));
-        this.register('dualChainView', (ctx) => new DualChainView({ eventAggregator: ctx.get('eventAggregator'), stateService: ctx.get('stateService'), calculationService: ctx.get('calculationService') }));
-        this.register('driveAccessoriesView', (ctx) => new DriveAccessoriesView({ eventAggregator: ctx.get('eventAggregator'), stateService: ctx.get('stateService'), calculationService: ctx.get('calculationService') }));
-        this.register('detailConfigView', (ctx) => new DetailConfigView({
-            eventAggregator: ctx.get('eventAggregator'),
-            stateService: ctx.get('stateService'),
-            k1LocationView: ctx.get('k1LocationView'),
-            k2FabricView: ctx.get('k2FabricView'),
-            k3OptionsView: ctx.get('k3OptionsView'),
-            dualChainView: ctx.get('dualChainView'),
-            driveAccessoriesView: ctx.get('driveAccessoriesView'),
-        }));
-        
-        this.register('workflowService', (ctx) => new WorkflowService({
-            eventAggregator: ctx.get('eventAggregator'),
-            stateService: ctx.get('stateService'),
-            fileService: ctx.get('fileService'),
-            calculationService: ctx.get('calculationService'),
-            productFactory: ctx.get('productFactory'),
-            detailConfigView: ctx.get('detailConfigView'),
-            configManager: ctx.get('configManager'), // [THE ONLY REQUIRED CHANGE]
-        }));
-        
-        this.register('appController', (ctx) => new AppController(ctx));
-    }
-
-    /**
-     * Initializes UI-related components.
-     * @param {Object} uiElements - A dictionary of pre-fetched DOM elements from main.js
-     */
-    initializeUIComponents(uiElements) {
-        // This is a special case. These are already instances. We store them directly.
-        this.instances.leftPanelComponent = uiElements.leftPanelComponent;
-        this.instances.rightPanelComponent = uiElements.rightPanelComponent;
-        this.instances.quotePreviewComponent = uiElements.quotePreviewComponent;
-
-        // Now that quotePreviewComponent is available, set it on the workflowService
-        this.get('workflowService').setQuotePreviewComponent(this.get('quotePreviewComponent'));
-
-        // Views for RightPanelComponent
-        this.register('f1CostView', (ctx) => new F1CostView({ eventAggregator: ctx.get('eventAggregator'), stateService: ctx.get('stateService') }));
-        this.register('f2SummaryView', (ctx) => new F2SummaryView({ eventAggregator: ctx.get('eventAggregator'), stateService: ctx.get('stateService') }));
-        this.register('f3QuotePrepView', (ctx) => new F3QuotePrepView({ eventAggregator: ctx.get('eventAggregator'), stateService: ctx.get('stateService') }));
-        this.register('f4ActionsView', (ctx) => new F4ActionsView({ eventAggregator: ctx.get('eventAggregator'), stateService: ctx.get('stateService') }));
-
-        // Pass view instances to RightPanelComponent
-        this.get('rightPanelComponent').setViews({
-            f1CostView: this.get('f1CostView'),
-            f2SummaryView: this.get('f2SummaryView'),
-            f3QuotePrepView: this.get('f3QuotePrepView'),
-            f4ActionsView: this.get('f4ActionsView'),
-        });
-        
-        // Pass view instances to LeftPanelComponent
-        this.get('leftPanelComponent').setViews({
-            detailConfigView: this.get('detailConfigView')
-        });
-
-        // Other UI Components
-        this.register('tableComponent', (ctx) => new TableComponent({
-            eventAggregator: ctx.get('eventAggregator'),
-            stateService: ctx.get('stateService'),
-            configManager: ctx.get('configManager'),
-            productFactory: ctx.get('productFactory'),
-        }));
-        this.register('summaryComponent', (ctx) => new SummaryComponent({ stateService: ctx.get('stateService') }));
-        this.register('notificationComponent', () => new NotificationComponent());
-        this.register('dialogComponent', (ctx) => new DialogComponent({ eventAggregator: ctx.get('eventAggregator') }));
-        
-        this.register('leftPanelInputHandler', (ctx) => new LeftPanelInputHandler({
-            eventAggregator: ctx.get('eventAggregator'),
-            stateService: ctx.get('stateService'),
-            detailConfigView: ctx.get('detailConfigView')
-        }));
-
-        // The master UI coordinator
-        this.register('uiManager', (ctx) => new UIManager({
-            eventAggregator: ctx.get('eventAggregator'),
-            stateService: ctx.get('stateService'),
-            components: {
-                table: ctx.get('tableComponent'),
-                summary: ctx.get('summaryComponent'),
-                leftPanel: ctx.get('leftPanelComponent'),
-                rightPanel: ctx.get('rightPanelComponent'),
-                notification: ctx.get('notificationComponent'),
-                dialog: ctx.get('dialogComponent'),
-                quotePreview: ctx.get('quotePreviewComponent'),
-            }
-        }));
-    }
-}
+import { initialState } from './config/initial-state.js';
+import { F1CostView } from './ui/views/f1-cost-view.js';
+import { F2SummaryView } from './ui/views/f2-summary-view.js';
+import { F3QuotePrepView } from './ui/views/f3-quote-prep-view.js';
+import { F4ActionsView } from './ui/views/f4-actions-view.js';
+import { QuotePreviewComponent } from './ui/quote-preview-component.js'; // [NEW]
+import { DOM_IDS } from './config/constants.js'; // [NEW]

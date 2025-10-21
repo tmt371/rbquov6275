@@ -4,425 +4,63 @@ import { initialState } from '../config/initial-state.js';
 import { EVENTS, DOM_IDS } from '../config/constants.js';
 import * as uiActions from '../actions/ui-actions.js';
 import * as quoteActions from '../actions/quote-actions.js';
-import { paths } from '../config/paths.js';
+import { paths } from '../config/paths.js'; // [NEW] Import paths
 
 /**
  * @fileoverview A dedicated service for coordinating complex, multi-step user workflows.
  * This service takes complex procedural logic out of the AppController.
  */
 export class WorkflowService {
-    constructor({
-        eventAggregator,
-        stateService,
-        fileService,
-        calculationService,
-        productFactory,
-        detailConfigView,
-        configManager, // [FIX] Added missing dependency
-    }) {
+    constructor({ eventAggregator, stateService, fileService, calculationService, productFactory, detailConfigView }) {
         this.eventAggregator = eventAggregator;
         this.stateService = stateService;
         this.fileService = fileService;
         this.calculationService = calculationService;
         this.productFactory = productFactory;
         this.detailConfigView = detailConfigView;
-        this.configManager = configManager; // [FIX] Store the dependency
         this.quotePreviewComponent = null; // Will be set by AppContext
 
         this.f2InputSequence = [
-            'f2-b10-wifi-qty',
-            'f2-b13-delivery-qty',
-            'f2-b14-install-qty',
-            'f2-b15-removal-qty',
-            'f2-b17-mul-times',
-            'f2-b18-discount',
+            'f2-b10-wifi-qty', 'f2-b13-delivery-qty', 'f2-b14-install-qty',
+            'f2-b15-removal-qty', 'f2-b17-mul-times', 'f2-b18-discount'
         ];
-        console.log('WorkflowService Initialized.');
+        console.log("WorkflowService Initialized.");
     }
 
-    // [HELPER] Setter for the QuotePreviewComponent dependency
+    // [NEW] Setter for the QuotePreviewComponent dependency
     setQuotePreviewComponent(component) {
         this.quotePreviewComponent = component;
     }
 
-    // [HELPER] Gets current items for the active product
-    _getItems() {
-        const { quoteData } = this.stateService.getState();
-        const productKey = quoteData.currentProduct;
-        return quoteData.products[productKey]?.items || [];
-    }
-
-    // [HELPER] Formats a number into a currency string
-    _formatCurrency(value, decimals = 2) {
-        if (typeof value !== 'number') return '';
-        return `$${value.toFixed(decimals)}`;
-    }
-
-    // [HELPER] Gets the class for the appendix table row based on fabric type
-    _getFabricRowClass(item) {
-        if (item.fabric && item.fabric.toLowerCase().includes('light-filter')) {
-            return 'bg-light-filter';
-        }
-        if (['B1', 'B2', 'B3', 'B4', 'B5'].includes(item.fabricType)) {
-            return 'bg-blockout';
-        }
-        if (item.fabricType === 'SN') {
-            return 'bg-screen';
-        }
-        return '';
-    }
-
-    /**
-     * [REFACTORED V1 - STAGE 1] Handles the request for a printable quote.
-     * This version focuses ONLY on preparing the data object and logging it for verification.
-     * HTML rendering is deferred to Stage 2.
-     */
     async handlePrintableQuoteRequest() {
         try {
-            const f3Data = this._getF3OverrideData();
-            const { quoteData, ui } = this.stateService.getState();
-            const summaryData = this.calculationService.calculateF2Summary(
-                quoteData,
-                ui
-            );
-
-            // --- Prepare Data for Page 1 (Overview) ---
-            const { html: page1ItemsHtml, subtotal } =
-                this._preparePage1Items(summaryData, quoteData, ui);
-            const gst = subtotal * 0.1;
-            const grandTotal = subtotal + gst;
-            const deposit = grandTotal * 0.5;
-            const balance = grandTotal - deposit;
-            const savings = summaryData.firstRbPrice - summaryData.disRbPrice;
-
-            // --- Prepare Data for Page 2 (Appendix) ---
-            const rollerBlindsTableHtml = this._preparePage2RollerBlindsTable(
-                quoteData,
-                ui,
-                summaryData.mulTimes
-            );
-            const motorisedTableHtml = this._preparePage2MotorisedTable(ui);
-
-            // --- Assemble the final data object for verification ---
-            const templateData = {
-                // Meta
-                quoteId: f3Data.quoteId,
-                issueDate: f3Data.issueDate
-                    ? new Date(f3Data.issueDate).toLocaleDateString('en-AU')
-                    : '',
-                dueDate: f3Data.dueDate
-                    ? new Date(f3Data.dueDate).toLocaleDateString('en-AU')
-                    : '',
-
-                // Customer
-                customerInfoHtml: this._formatCustomerInfo(f3Data),
-
-                // Page 1 Items
-                itemsTableBody: page1ItemsHtml, // This is just a placeholder for now
-
-                // Page 1 Summary
-                subtotal: this._formatCurrency(subtotal),
-                gst: this._formatCurrency(gst),
-                grandTotal: this._formatCurrency(grandTotal),
-                deposit: this._formatCurrency(deposit),
-                balance: this._formatCurrency(balance),
-                savings: this._formatCurrency(savings),
-                termsAndConditions: f3Data.termsConditions.replace(/\n/g, '<br>'),
-
-                // Page 2 Appendix
-                appendixQuoteId: f3Data.quoteId,
-                rollerBlindsTable: rollerBlindsTableHtml, // Placeholder
-                motorisedAccessoriesTable: motorisedTableHtml, // Placeholder
-            };
-
-            // [STAGE 1 GOAL] Log the prepared data object for verification.
-            console.log('--- TEMPLATE DATA FOR VERIFICATION ---', templateData);
-            this.eventAggregator.publish(EVENTS.SHOW_NOTIFICATION, {
-                message:
-                    'Template data prepared. Please check the console for verification.',
-            });
-
-            // The following lines for rendering are commented out for Stage 1.
-            /*
+            // 1. Fetch templates
             const [quoteTemplate, detailsTemplate] = await Promise.all([
                 fetch(paths.partials.quoteTemplate).then(res => res.text()),
                 fetch(paths.partials.detailedItemList).then(res => res.text()),
             ]);
+
+            // 2. Get current state and F3 override data
+            const { quoteData, ui } = this.stateService.getState();
+            const f3Data = this._getF3OverrideData();
+
+            // 3. Prepare data for templates
+            const templateData = this._prepareTemplateData(quoteData, ui, f3Data);
+
+            // 4. Populate templates
             const populatedDetails = this._populateTemplate(detailsTemplate, templateData);
             const finalHtml = this._populateTemplate(quoteTemplate, { ...templateData, detailedItemList: populatedDetails });
+
+            // 5. Show preview
             this.eventAggregator.publish(EVENTS.SHOW_QUOTE_PREVIEW, finalHtml);
-            */
+
         } catch (error) {
-            console.error('Error generating printable quote data:', error);
+            console.error("Error generating printable quote:", error);
             this.eventAggregator.publish(EVENTS.SHOW_NOTIFICATION, {
-                message:
-                    'Failed to generate quote data. See console for details.',
+                message: "Failed to generate quote preview. See console for details.",
                 type: 'error',
             });
         }
-    }
-
-    /**
-     * [NEW] Prepares the HTML string for the items table on page 1.
-     * @returns {{html: string, subtotal: number}}
-     */
-    _preparePage1Items(summaryData, quoteData, ui) {
-        const items = this._getItems();
-        const validItemCount = items.filter((i) => i.width && i.height).length;
-        let rowsHtml = '';
-        let subtotal = 0;
-        let itemCounter = 1;
-
-        const createRow = (
-            description,
-            details,
-            qty,
-            price,
-            discountedPrice,
-            isExcluded = false
-        ) => {
-            const priceText = isExcluded
-                ? `<span class="original-price">${this._formatCurrency(price)}</span>`
-                : this._formatCurrency(price);
-            const discountedPriceText = this._formatCurrency(discountedPrice);
-            subtotal += discountedPrice;
-
-            return `
-                <tr>
-                    <td data-label="#">${itemCounter++}</td>
-                    <td data-label="Description">
-                        <div class="description">${description}</div>
-                        <div class="details">${details}</div>
-                    </td>
-                    <td data-label="QTY" class="align-right">${qty}</td>
-                    <td data-label="Price" class="align-right">${priceText}</td>
-                    <td data-label="Discounted Price" class="align-right discounted-price">${discountedPriceText}</td>
-                </tr>
-            `;
-        };
-
-        // 1. Roller Blinds
-        if (summaryData.disRbPrice > 0) {
-            rowsHtml += createRow(
-                'Roller Blinds',
-                'See attached list for details.',
-                validItemCount,
-                summaryData.firstRbPrice,
-                summaryData.disRbPrice
-            );
-        }
-
-        // 2. Installation Accessories
-        if (summaryData.acceSum > 0) {
-            rowsHtml += createRow(
-                'Installation Accessories',
-                'Dual Brackets, HD Winders, etc.',
-                'N/A',
-                summaryData.acceSum,
-                summaryData.acceSum
-            );
-        }
-
-        // 3. Motorised Sets
-        if (summaryData.eAcceSum > 0) {
-            rowsHtml += createRow(
-                'Motorised Sets & Accessories',
-                'Motors, Remotes, Chargers, etc.',
-                'N/A',
-                summaryData.eAcceSum,
-                summaryData.eAcceSum
-            );
-        }
-
-        // 4. Delivery
-        if (summaryData.deliveryFee > 0) {
-            rowsHtml += createRow(
-                'Delivery',
-                '',
-                ui.f2.deliveryQty || 1,
-                summaryData.deliveryFee,
-                ui.f2.deliveryFeeExcluded ? 0 : summaryData.deliveryFee,
-                ui.f2.deliveryFeeExcluded
-            );
-        }
-
-        // 5. Installation
-        if (summaryData.installFee > 0) {
-            rowsHtml += createRow(
-                'Installation',
-                '',
-                ui.f2.installQty || validItemCount,
-                summaryData.installFee,
-                ui.f2.installFeeExcluded ? 0 : summaryData.installFee,
-                ui.f2.installFeeExcluded
-            );
-        }
-
-        // 6. Removal
-        if (summaryData.removalFee > 0) {
-            rowsHtml += createRow(
-                'Removal',
-                '',
-                ui.f2.removalQty || 0,
-                summaryData.removalFee,
-                ui.f2.removalFeeExcluded ? 0 : summaryData.removalFee,
-                ui.f2.removalFeeExcluded
-            );
-        }
-
-        return { html: rowsHtml, subtotal };
-    }
-
-    /**
-     * [NEW] Prepares the full HTML <table> string for the Roller Blinds appendix.
-     * @returns {string}
-     */
-    _preparePage2RollerBlindsTable(quoteData, ui, mulTimes) {
-        const items = this._getItems();
-        const validItems = items.filter((i) => i.width && i.height);
-        if (validItems.length === 0) return '';
-
-        const mul = typeof mulTimes === 'number' ? mulTimes : 1;
-
-        const bodyRows = validItems
-            .map((item, index) => {
-                const rowClass = this._getFabricRowClass(item);
-                const fabricName =
-                    item.fabric ||
-                    this.configManager.getPriceMatrix(item.fabricType)?.name ||
-                    '';
-                const calculatedPrice = (item.linePrice || 0) * mul;
-
-                return `
-                <tr>
-                    <td class="text-center">${index + 1}</td>
-                    <td class="${rowClass}">${fabricName}</td>
-                    <td class="${rowClass}">${item.color || ''}</td>
-                    <td>${item.location || ''}</td>
-                    <td class="text-center">${item.winder === 'HD' ? '✓' : ''}</td>
-                    <td class="text-center">${item.dual === 'D' ? '✓' : ''}</td>
-                    <td class="text-center">${item.motor ? '✓' : ''}</td>
-                    <td class="text-right">${this._formatCurrency(calculatedPrice)}</td>
-                </tr>
-            `;
-            })
-            .join('');
-
-        const subtotal = validItems.reduce(
-            (sum, item) => sum + (item.linePrice || 0) * mul,
-            0
-        );
-
-        return `
-            <table class="detailed-list-table">
-                <thead>
-                    <tr><th colspan="8" class="text-center table-title">Roller Blinds</th></tr>
-                    <tr>
-                        <th class="text-center">NO</th>
-                        <th>Name</th>
-                        <th>Color</th>
-                        <th>Location</th>
-                        <th class="text-center">HD</th>
-                        <th class="text-center">Dual</th>
-                        <th class="text-center">Motor</th>
-                        <th class="text-right">Price</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${bodyRows}
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <td colspan="7" class="text-right"><strong>Sub total</strong></td>
-                        <td class="text-right">${this._formatCurrency(subtotal)}</td>
-                    </tr>
-                </tfoot>
-            </table>
-        `;
-    }
-
-    /**
-     * [NEW] Prepares the full HTML <table> string for the Motorised Accessories appendix.
-     * @returns {string}
-     */
-    _preparePage2MotorisedTable(ui) {
-        const f1State = ui.f1;
-        const motorPrice = ui.driveMotorTotalPrice || 0;
-        const remote1chPrice = this.calculationService.calculateF1ComponentPrice(
-            'remote-1ch',
-            f1State.remote_1ch_qty
-        );
-        const remote16chPrice =
-            this.calculationService.calculateF1ComponentPrice(
-                'remote-16ch',
-                f1State.remote_16ch_qty
-            );
-        const chargerPrice = ui.driveChargerTotalPrice || 0;
-        const cordPrice = ui.driveCordTotalPrice || 0;
-
-        const totalMotorisedPrice =
-            motorPrice +
-            remote1chPrice +
-            remote16chPrice +
-            chargerPrice +
-            cordPrice;
-        if (totalMotorisedPrice === 0) return '';
-
-        let bodyHtml = '';
-        if (motorPrice > 0) {
-            bodyHtml += `<tr><td>Motor</td><td class="text-center">${
-                ui.driveMotorTotalPrice /
-                this.calculationService.calculateF1ComponentPrice('motor', 1)
-            }</td><td class="text-right">${this._formatCurrency(
-                motorPrice
-            )}</td></tr>`;
-        }
-        if (remote1chPrice > 0) {
-            bodyHtml += `<tr><td>Remote</td><td class="text-center">${
-                f1State.remote_1ch_qty
-            } x 1 CH</td><td class="text-right">${this._formatCurrency(
-                remote1chPrice
-            )}</td></tr>`;
-        }
-        if (remote16chPrice > 0) {
-            bodyHtml += `<tr><td>Remote</td><td class="text-center">${
-                f1State.remote_16ch_qty
-            } x 16 CH</td><td class="text-right">${this._formatCurrency(
-                remote16chPrice
-            )}</td></tr>`;
-        }
-        if (chargerPrice > 0) {
-            bodyHtml += `<tr><td>Charger</td><td class="text-center">${
-                ui.driveChargerCount
-            }</td><td class="text-right">${this._formatCurrency(
-                chargerPrice
-            )}</td></tr>`;
-        }
-        if (cordPrice > 0) {
-            bodyHtml += `<tr><td>3M Cord</td><td class="text-center">${
-                ui.driveCordCount
-            }</td><td class="text-right">${this._formatCurrency(
-                cordPrice
-            )}</td></tr>`;
-        }
-
-        return `
-            <div class="table-scroll-wrapper">
-                <table class="detailed-list-table">
-                    <thead>
-                        <tr><th colspan="3" class="text-center table-title">Motorised Accessories</th></tr>
-                        <tr><th>Item</th><th class="text-center">Details / QTY</th><th class="text-right">Total Price</th></tr>
-                    </thead>
-                    <tbody>${bodyHtml}</tbody>
-                    <tfoot>
-                        <tr class="total-row">
-                            <td colspan="2" class="text-right"><strong>Total</strong></td>
-                            <td class="text-right">${this._formatCurrency(totalMotorisedPrice)}</td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
-        `;
     }
 
     _getF3OverrideData() {
@@ -441,13 +79,33 @@ export class WorkflowService {
         };
     }
 
+    _prepareTemplateData(quoteData, ui, f3Data) {
+        // This will be expanded significantly to gather all necessary data points
+        // For now, it's a placeholder for the main data structure.
+        const summaryData = this.calculationService.calculateF2Summary(quoteData, ui);
+
+        return {
+            quoteId: f3Data.quoteId,
+            issueDate: f3Data.issueDate,
+            dueDate: f3Data.dueDate,
+            customerInfoHtml: this._formatCustomerInfo(f3Data),
+            itemsTableBody: '<tr><td colspan="5">Item details will be populated here.</td></tr>', // Placeholder
+            rollerBlindsTable: '<table><tr><td>Detailed roller blind list will be here.</td></tr></table>', // Placeholder
+            subtotal: `$${summaryData.sumPrice.toFixed(2)}`, // Example
+            deliveryFee: `$${summaryData.deliveryFee.toFixed(2)}`,
+            installationFee: `$${summaryData.installFee.toFixed(2)}`,
+            gst: `$${(summaryData.sumPrice * 0.1).toFixed(2)}`,
+            grandTotal: `$${(summaryData.sumPrice * 1.1).toFixed(2)}`,
+            deposit: `$${(summaryData.sumPrice * 1.1 * 0.5).toFixed(2)}`,
+            balance: `$${(summaryData.sumPrice * 1.1 * 0.5).toFixed(2)}`,
+            savings: `$${(summaryData.firstRbPrice - summaryData.disRbPrice).toFixed(2)}`,
+            termsAndConditions: f3Data.termsConditions.replace(/\n/g, '<br>')
+        };
+    }
+
     _formatCustomerInfo(f3Data) {
-        let html = `<strong>${f3Data.customerName || 'Valued Customer'}</strong><br>`;
-        if (f3Data.customerAddress) {
-            html += `${f3Data.customerAddress.replace(/\n/g, '<br>')}<br>`;
-        } else {
-            html += 'Address to be provided<br>';
-        }
+        let html = `<strong>${f3Data.customerName || ''}</strong><br>`;
+        if (f3Data.customerAddress) html += `${f3Data.customerAddress.replace(/\n/g, '<br>')}<br>`;
         if (f3Data.customerPhone) html += `Phone: ${f3Data.customerPhone}<br>`;
         if (f3Data.customerEmail) html += `Email: ${f3Data.customerEmail}`;
         return html;
@@ -458,8 +116,6 @@ export class WorkflowService {
             return data.hasOwnProperty(key) ? data[key] : match;
         });
     }
-
-    // ... (The rest of the unchanged methods from the snapshot are omitted for brevity) ...
 
     handleRemoteDistribution() {
         const { ui } = this.stateService.getState();
@@ -475,17 +131,17 @@ export class WorkflowService {
                     { type: 'text', text: '1-Ch Qty:', className: 'dialog-label' },
                     { type: 'input', id: DOM_IDS.DIALOG_INPUT_1CH, value: initial1ch },
                     { type: 'text', text: '16-Ch Qty:', className: 'dialog-label' },
-                     { type: 'input', id: DOM_IDS.DIALOG_INPUT_16CH, value: initial16ch }
+                    { type: 'input', id: DOM_IDS.DIALOG_INPUT_16CH, value: initial16ch }
                 ],
                 [
                     {
                         type: 'button',
-                         text: 'Confirm',
+                        text: 'Confirm',
                         className: 'primary-confirm-button',
                         colspan: 2,
                         callback: () => {
                             const qty1ch = parseInt(document.getElementById(DOM_IDS.DIALOG_INPUT_1CH).value, 10);
-                             const qty16ch = parseInt(document.getElementById(DOM_IDS.DIALOG_INPUT_16CH).value, 10);
+                            const qty16ch = parseInt(document.getElementById(DOM_IDS.DIALOG_INPUT_16CH).value, 10);
 
                             if (isNaN(qty1ch) || isNaN(qty16ch) || qty1ch < 0 || qty16ch < 0) {
                                 this.eventAggregator.publish(EVENTS.SHOW_NOTIFICATION, { message: 'Quantities must be positive numbers.', type: 'error' });
@@ -493,10 +149,10 @@ export class WorkflowService {
                             }
 
                             if (qty1ch + qty16ch !== totalRemoteCount) {
-                                 this.eventAggregator.publish(EVENTS.SHOW_NOTIFICATION, {
+                                this.eventAggregator.publish(EVENTS.SHOW_NOTIFICATION, {
                                     message: `Total must equal ${totalRemoteCount}. Current total: ${qty1ch + qty16ch}.`,
                                     type: 'error'
-                                 });
+                                });
                                 return false;
                             }
 
@@ -505,30 +161,30 @@ export class WorkflowService {
                         }
                     },
                     { type: 'button', text: 'Cancel', className: 'secondary', colspan: 2, callback: () => { } }
-                 ]
+                ]
             ],
-             onOpen: () => {
+            onOpen: () => {
                 const input1ch = document.getElementById(DOM_IDS.DIALOG_INPUT_1CH);
                 const input16ch = document.getElementById(DOM_IDS.DIALOG_INPUT_16CH);
 
                 input1ch.addEventListener('input', () => {
                     const qty1ch = parseInt(input1ch.value, 10);
                     if (!isNaN(qty1ch) && qty1ch >= 0 && qty1ch <= totalRemoteCount) {
-                         input16ch.value = totalRemoteCount - qty1ch;
+                        input16ch.value = totalRemoteCount - qty1ch;
                     }
                 });
 
                 input16ch.addEventListener('input', () => {
                     const qty16ch = parseInt(input16ch.value, 10);
                     if (!isNaN(qty16ch) && qty16ch >= 0 && qty16ch <= totalRemoteCount) {
-                         input1ch.value = totalRemoteCount - qty16ch;
+                        input1ch.value = totalRemoteCount - qty16ch;
                     }
                 });
 
                 setTimeout(() => {
                     input1ch.focus();
                     input1ch.select();
-                 }, 0);
+                }, 0);
             },
             closeOnOverlayClick: false
         });
@@ -545,17 +201,17 @@ export class WorkflowService {
         this.eventAggregator.publish(EVENTS.SHOW_CONFIRMATION_DIALOG, {
             message: `Total Dual pairs: ${totalDualPairs}. Please distribute them.`,
             layout: [
-                 [
+                [
                     { type: 'text', text: 'Combo Qty:', className: 'dialog-label' },
                     { type: 'input', id: DOM_IDS.DIALOG_INPUT_COMBO, value: initialCombo },
                     { type: 'text', text: 'Slim Qty:', className: 'dialog-label' },
                     { type: 'input', id: DOM_IDS.DIALOG_INPUT_SLIM, value: initialSlim }
-                 ],
+                ],
                 [
                     {
                         type: 'button',
                         text: 'Confirm',
-                         className: 'primary-confirm-button',
+                        className: 'primary-confirm-button',
                         colspan: 2,
                         callback: () => {
                             const qtyCombo = parseInt(document.getElementById(DOM_IDS.DIALOG_INPUT_COMBO).value, 10);
@@ -567,7 +223,7 @@ export class WorkflowService {
                             }
 
                             if (qtyCombo + qtySlim !== totalDualPairs) {
-                                 this.eventAggregator.publish(EVENTS.SHOW_NOTIFICATION, {
+                                this.eventAggregator.publish(EVENTS.SHOW_NOTIFICATION, {
                                     message: `Total must equal ${totalDualPairs}. Current total: ${qtyCombo + qtySlim}.`,
                                     type: 'error'
                                 });
@@ -581,7 +237,7 @@ export class WorkflowService {
                     { type: 'button', text: 'Cancel', className: 'secondary', colspan: 2, callback: () => { } }
                 ]
             ],
-             onOpen: () => {
+            onOpen: () => {
                 const inputCombo = document.getElementById(DOM_IDS.DIALOG_INPUT_COMBO);
                 const inputSlim = document.getElementById(DOM_IDS.DIALOG_INPUT_SLIM);
 
@@ -637,7 +293,7 @@ export class WorkflowService {
             this.stateService.dispatch(uiActions.setCurrentView('DETAIL_CONFIG'));
             this.detailConfigView.activateTab('k1-tab');
         } else {
-             this.stateService.dispatch(uiActions.setCurrentView('QUICK_QUOTE'));
+            this.stateService.dispatch(uiActions.setCurrentView('QUICK_QUOTE'));
             this.stateService.dispatch(uiActions.setVisibleColumns(initialState.ui.visibleColumns));
         }
     }
