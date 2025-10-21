@@ -40,7 +40,9 @@ import { QuotePreviewComponent } from './ui/quote-preview-component.js';
  */
 export class AppContext {
     constructor() {
-        this.dependencies = {};
+        // [CORRECTED] Use an object to store factory functions, not instances.
+        this.factories = {};
+        this.instances = {};
     }
 
     /**
@@ -62,34 +64,30 @@ export class AppContext {
     }
 
     /**
-     * Registers a dependency.
+     * [CORRECTED] Registers a factory function for a dependency.
      * @param {string} name - The name of the dependency.
      * @param {function} factory - A function that creates the dependency.
      */
     register(name, factory) {
-        // The factory function receives 'this' (the context) to resolve other dependencies.
-        this.dependencies[name] = factory(this);
+        this.factories[name] = factory;
     }
 
     /**
-     * Resolves a dependency.
+     * [CORRECTED] Resolves a dependency. It creates the instance only once (singleton).
      * @param {string} name - The name of the dependency.
-     * @returns {*} The resolved dependency.
+     * @returns {*} The resolved dependency instance.
      */
     get(name) {
-        const dependency = this.dependencies[name];
-        if (!dependency) {
-            // Check if it's a factory function that hasn't been instantiated yet
-            const factory = this.dependencies[name];
-            if (typeof factory === 'function') {
-                this.dependencies[name] = factory(this);
-                return this.dependencies[name];
+        if (!this.instances[name]) {
+            const factory = this.factories[name];
+            if (!factory) {
+                throw new Error(`Dependency not found: ${name}`);
             }
-            throw new Error(`Dependency not found: ${name}`);
+            // Create the instance and pass 'this' (the context) to the factory.
+            this.instances[name] = factory(this);
         }
-        return dependency;
+        return this.instances[name];
     }
-
 
     /**
      * Initializes the ConfigManager which is required by many other services.
@@ -133,7 +131,7 @@ export class AppContext {
             calculationService: ctx.get('calculationService'),
             productFactory: ctx.get('productFactory'),
             detailConfigView: ctx.get('detailConfigView'),
-            configManager: ctx.get('configManager'), // [FIX] Pass configManager dependency
+            configManager: ctx.get('configManager'), // [THE ONLY REQUIRED CHANGE]
         }));
         
         this.register('appController', (ctx) => new AppController(ctx));
@@ -144,12 +142,12 @@ export class AppContext {
      * @param {Object} uiElements - A dictionary of pre-fetched DOM elements from main.js
      */
     initializeUIComponents(uiElements) {
-        // Register core UI components that were instantiated in main.js
-        this.register('leftPanelComponent', () => uiElements.leftPanelComponent);
-        this.register('rightPanelComponent', () => uiElements.rightPanelComponent);
-        this.register('quotePreviewComponent', () => uiElements.quotePreviewComponent);
+        // This is a special case. These are already instances. We store them directly.
+        this.instances.leftPanelComponent = uiElements.leftPanelComponent;
+        this.instances.rightPanelComponent = uiElements.rightPanelComponent;
+        this.instances.quotePreviewComponent = uiElements.quotePreviewComponent;
 
-        // Now that quotePreviewComponent is registered, set it on the workflowService
+        // Now that quotePreviewComponent is available, set it on the workflowService
         this.get('workflowService').setQuotePreviewComponent(this.get('quotePreviewComponent'));
 
         // Views for RightPanelComponent
