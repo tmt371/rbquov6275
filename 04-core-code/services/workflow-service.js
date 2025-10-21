@@ -45,7 +45,6 @@ export class WorkflowService {
 
             const populatedDetailsPageHtml = this._populateTemplate(detailsTemplate, templateData);
 
-            // [FIX] Correctly extract both style and body from the second page.
             const styleMatch = populatedDetailsPageHtml.match(/<style>([\s\S]*)<\/style>/i);
             const detailsBodyMatch = populatedDetailsPageHtml.match(/<body[^>]*>([\s\S]*)<\/body>/i);
 
@@ -56,11 +55,9 @@ export class WorkflowService {
             const detailsStyleContent = styleMatch ? styleMatch[0] : '';
             const detailsBodyContent = detailsBodyMatch[1];
             
-            // Inject the second page's styles into the first page's head, and the body content into the body.
             let finalHtml = quoteTemplate.replace('</head>', `${detailsStyleContent}</head>`);
             finalHtml = finalHtml.replace('</body>', `${detailsBodyContent}</body>`);
 
-            // Now, populate the combined template with all the data.
             finalHtml = this._populateTemplate(finalHtml, templateData);
 
             this.eventAggregator.publish(EVENTS.SHOW_QUOTE_PREVIEW, finalHtml);
@@ -96,10 +93,58 @@ export class WorkflowService {
         if (f3Data.customerEmail) html += `Email: ${f3Data.customerEmail}`;
         return html;
     }
+    
+    // [NEW] Helper method to generate the detailed items table for the appendix.
+    _generateItemsTableHtml(items) {
+        const headers = ['#', 'Location', 'W&nbsp;x&nbsp;H', 'Type', 'F-Name', 'F-Color', 'Options'];
+        
+        const rows = items
+            .filter(item => item.width && item.height) // Only include rows with dimensions
+            .map((item, index) => {
+                const options = [
+                    item.over, item.oi, item.lr,
+                    item.dual ? "D'Bracket" : '',
+                    item.chain ? `${item.chain}mm` : '',
+                    item.winder ? 'H-Winder' : '',
+                    item.motor || ''
+                ].filter(Boolean).join(', ');
+
+                return `
+                    <tr>
+                        <td class="text-center">${index + 1}</td>
+                        <td>${item.location || ''}</td>
+                        <td>${item.width} x ${item.height}</td>
+                        <td>${item.fabricType || ''}</td>
+                        <td>${item.fabric || ''}</td>
+                        <td>${item.color || ''}</td>
+                        <td>${options}</td>
+                    </tr>
+                `;
+            })
+            .join('');
+
+        return `
+            <table class="items-table">
+                <thead>
+                    <tr class="table-title">
+                        <th colspan="${headers.length}">Roller Blinds - Detailed List</th>
+                    </tr>
+                    <tr>
+                        ${headers.map(h => `<th>${h}</th>`).join('')}
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rows}
+                </tbody>
+            </table>
+        `;
+    }
+
 
     _prepareTemplateData(quoteData, ui, f3Data) {
         const summaryData = this.calculationService.calculateF2Summary(quoteData, ui);
         const grandTotal = parseFloat(f3Data.finalOfferPrice) || summaryData.gst;
+        const items = quoteData.products.rollerBlind.items;
 
         return {
             // Real Data from F3 and calculations
@@ -118,7 +163,7 @@ export class WorkflowService {
             balance: `$${(grandTotal * 0.5).toFixed(2)}`,
             savings: `$${(summaryData.firstRbPrice - summaryData.disRbPrice).toFixed(2)}`,
 
-            // Placeholder Data for Stage 2 (to be implemented in Stage 3)
+            // Real data for the main items table (first page)
             itemsTableBody: `
                 <tr>
                     <td data-label="#">1</td>
@@ -126,7 +171,7 @@ export class WorkflowService {
                         <div class="description">Roller Blinds Package</div>
                         <div class="details">See appendix for detailed specifications.</div>
                     </td>
-                    <td data-label="QTY" class="align-right">${quoteData.products.rollerBlind.items.length - 1}</td>
+                    <td data-label="QTY" class="align-right">${items.filter(i => i.width && i.height).length}</td>
                     <td data-label="Price" class="align-right">
                         <span class="original-price">$${summaryData.firstRbPrice.toFixed(2)}</span>
                     </td>
@@ -134,14 +179,15 @@ export class WorkflowService {
                         <span class="discounted-price">$${summaryData.disRbPrice.toFixed(2)}</span>
                     </td>
                 </tr>`,
-            rollerBlindsTable: '<table><thead><tr><th>#</th><th>Location</th><th>W x H</th><th>Type</th><th>Fabric</th><th>Color</th><th>Options</th></tr></thead><tbody><tr><td>1</td><td>[Location]</td><td>[W] x [H]</td><td>[Type]</td><td>[F-Name]</td><td>[F-Color]</td><td>[Options]</td></tr></tbody></table>',
+
+            // [MODIFIED] Real data for the appendix table (second page)
+            rollerBlindsTable: this._generateItemsTableHtml(items),
         };
     }
 
     _populateTemplate(template, data) {
         return template.replace(/\{\{\{?([\w\-]+)\}\}\}?/g, (match, key) => {
-            // Check for undefined or null, but allow 0 to be displayed
-            return data[key] !== undefined && data[key] !== null ? data[key] : match;
+            return data.hasOwnProperty(key) ? data[key] : match;
         });
     }
 
