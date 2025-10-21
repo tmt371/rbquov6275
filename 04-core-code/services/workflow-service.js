@@ -4,7 +4,7 @@ import { initialState } from '../config/initial-state.js';
 import { EVENTS, DOM_IDS } from '../config/constants.js';
 import * as uiActions from '../actions/ui-actions.js';
 import * as quoteActions from '../actions/quote-actions.js';
-import { paths } from '../config/paths.js'; // [NEW] Import paths
+import { paths } from '../config/paths.js';
 
 /**
  * @fileoverview A dedicated service for coordinating complex, multi-step user workflows.
@@ -27,31 +27,34 @@ export class WorkflowService {
         console.log("WorkflowService Initialized.");
     }
 
-    // [NEW] Setter for the QuotePreviewComponent dependency
+    // [MODIFIED] All quote generation logic is now consolidated here.
     setQuotePreviewComponent(component) {
         this.quotePreviewComponent = component;
     }
 
     async handlePrintableQuoteRequest() {
         try {
-            // 1. Fetch templates
+            // Stage 1: Fetch both HTML templates.
             const [quoteTemplate, detailsTemplate] = await Promise.all([
-                fetch(paths.partials.quoteTemplate).then(res => res.text()),
-                fetch(paths.partials.detailedItemList).then(res => res.text()),
+                fetch(paths.partials.quoteTemplate).then(res => res.ok ? res.text() : Promise.reject(new Error(`Failed to load ${paths.partials.quoteTemplate}`))),
+                fetch(paths.partials.detailedItemList).then(res => res.ok ? res.text() : Promise.reject(new Error(`Failed to load ${paths.partials.detailedItemList}`))),
             ]);
 
-            // 2. Get current state and F3 override data
-            const { quoteData, ui } = this.stateService.getState();
+            // Stage 1: Get data from F3 panel.
             const f3Data = this._getF3OverrideData();
 
-            // 3. Prepare data for templates
-            const templateData = this._prepareTemplateData(quoteData, ui, f3Data);
+            // Stage 1: Prepare data object with placeholders and a few real values.
+            const templateData = this._prepareTemplateData(f3Data);
 
-            // 4. Populate templates
-            const populatedDetails = this._populateTemplate(detailsTemplate, templateData);
-            const finalHtml = this._populateTemplate(quoteTemplate, { ...templateData, detailedItemList: populatedDetails });
+            // Stage 1: Populate both templates with the data.
+            const populatedQuotePage = this._populateTemplate(quoteTemplate, templateData);
+            const populatedDetailsPage = this._populateTemplate(detailsTemplate, templateData);
 
-            // 5. Show preview
+            // Stage 1: Combine the two populated HTML documents into a single string for the iframe.
+            // Browsers are lenient and will render this sequentially.
+            const finalHtml = populatedQuotePage + populatedDetailsPage;
+
+            // Publish the final combined HTML to be displayed.
             this.eventAggregator.publish(EVENTS.SHOW_QUOTE_PREVIEW, finalHtml);
 
         } catch (error) {
@@ -73,46 +76,50 @@ export class WorkflowService {
             customerAddress: getValue('f3-customer-address'),
             customerPhone: getValue('f3-customer-phone'),
             customerEmail: getValue('f3-customer-email'),
-            finalOfferPrice: getValue('f3-final-offer-price'),
-            generalNotes: getValue('f3-general-notes'),
             termsConditions: getValue('f3-terms-conditions'),
         };
     }
-
-    _prepareTemplateData(quoteData, ui, f3Data) {
-        // This will be expanded significantly to gather all necessary data points
-        // For now, it's a placeholder for the main data structure.
-        const summaryData = this.calculationService.calculateF2Summary(quoteData, ui);
-
-        return {
-            quoteId: f3Data.quoteId,
-            issueDate: f3Data.issueDate,
-            dueDate: f3Data.dueDate,
-            customerInfoHtml: this._formatCustomerInfo(f3Data),
-            itemsTableBody: '<tr><td colspan="5">Item details will be populated here.</td></tr>', // Placeholder
-            rollerBlindsTable: '<table><tr><td>Detailed roller blind list will be here.</td></tr></table>', // Placeholder
-            subtotal: `$${summaryData.sumPrice.toFixed(2)}`, // Example
-            deliveryFee: `$${summaryData.deliveryFee.toFixed(2)}`,
-            installationFee: `$${summaryData.installFee.toFixed(2)}`,
-            gst: `$${(summaryData.sumPrice * 0.1).toFixed(2)}`,
-            grandTotal: `$${(summaryData.sumPrice * 1.1).toFixed(2)}`,
-            deposit: `$${(summaryData.sumPrice * 1.1 * 0.5).toFixed(2)}`,
-            balance: `$${(summaryData.sumPrice * 1.1 * 0.5).toFixed(2)}`,
-            savings: `$${(summaryData.firstRbPrice - summaryData.disRbPrice).toFixed(2)}`,
-            termsAndConditions: f3Data.termsConditions.replace(/\n/g, '<br>')
-        };
-    }
-
+    
     _formatCustomerInfo(f3Data) {
-        let html = `<strong>${f3Data.customerName || ''}</strong><br>`;
-        if (f3Data.customerAddress) html += `${f3Data.customerAddress.replace(/\n/g, '<br>')}<br>`;
+        // Use placeholders for Stage 1 if data is not available
+        let html = `<strong>${f3Data.customerName || '[Customer Name]'}</strong><br>`;
+        if (f3Data.customerAddress) {
+            html += `${f3Data.customerAddress.replace(/\n/g, '<br>')}<br>`;
+        } else {
+            html += '[Customer Address]<br>';
+        }
         if (f3Data.customerPhone) html += `Phone: ${f3Data.customerPhone}<br>`;
         if (f3Data.customerEmail) html += `Email: ${f3Data.customerEmail}`;
         return html;
     }
+    
+    _prepareTemplateData(f3Data) {
+        // Stage 1: This method returns a mix of real data from F3 and static placeholders.
+        return {
+            // Real Data
+            quoteId: f3Data.quoteId || '[Quote ID]',
+            issueDate: f3Data.issueDate || '[Issue Date]',
+            dueDate: f3Data.dueDate || '[Due Date]',
+            customerInfoHtml: this._formatCustomerInfo(f3Data),
+            termsAndConditions: (f3Data.termsConditions || 'Standard terms and conditions apply.').replace(/\n/g, '<br>'),
+
+            // Static Placeholder Data
+            itemsTableBody: '<tr><td data-label="#">1</td><td data-label="Description">Roller Blinds Package - Summary</td><td data-label="QTY" class="align-right">1</td><td data-label="Price" class="align-right"><span class="original-price">$0.00</span></td><td data-label="Discounted Price" class="align-right"><span class="discounted-price">$0.00</span></td></tr>',
+            rollerBlindsTable: '<table><thead><tr><th>#</th><th>Location</th><th>W x H</th><th>Type</th><th>Fabric</th><th>Color</th><th>Options</th></tr></thead><tbody><tr><td>1</td><td>[Location]</td><td>[W] x [H]</td><td>[Type]</td><td>[F-Name]</td><td>[F-Color]</td><td>[Options]</td></tr></tbody></table>',
+            subtotal: '$0.00',
+            deliveryFee: '$0.00',
+            installationFee: '$0.00',
+            gst: '$0.00',
+            grandTotal: '$0.00',
+            deposit: '$0.00',
+            balance: '$0.00',
+            savings: '$0.00'
+        };
+    }
 
     _populateTemplate(template, data) {
-        return template.replace(/\{\{\{?(\w+)}}}?/g, (match, key) => {
+        // This regex handles both {{key}} and {{{key}}} (for HTML content)
+        return template.replace(/\{\{\{?([\w\-]+)\}\}\}?/g, (match, key) => {
             return data.hasOwnProperty(key) ? data[key] : match;
         });
     }
@@ -379,7 +386,6 @@ export class WorkflowService {
     _calculateF2Summary() {
         const { quoteData, ui } = this.stateService.getState();
         const summaryValues = this.calculationService.calculateF2Summary(quoteData, ui);
-
         for (const key in summaryValues) {
             this.stateService.dispatch(uiActions.setF2Value(key, summaryValues[key]));
         }
